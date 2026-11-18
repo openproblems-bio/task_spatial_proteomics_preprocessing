@@ -1,0 +1,28 @@
+__merge__: /src/api/comp_method_proteomics_normalization.yaml
+
+name: total_log1p_normalization
+label: "Total-intensity log1p normalization"
+summary: "Normalize each cell to a fixed total intensity and apply log1p"
+description: |
+  Total-intensity normalization for spatial proteomics. For each cell, raw
+  marker intensities are divided by the total cell intensity, multiplied by a
+  target scale factor, and transformed using log1p.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - "numpy"
+          - "scipy"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

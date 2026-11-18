@@ -1,0 +1,28 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: reference_segmentation
+label: "Reference label segmentation"
+summary: "Use dataset-provided segmentation labels from a SpatialData Zarr store"
+description: |
+  Control segmentation method that extracts existing segmentation labels from SpatialData.
+  This is useful as an oracle/reference branch when evaluating image-derived segmentation methods.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "numpy"
+          - "spatialdata==0.5.0"
+          # spatialdata pulls in xarray_schema, which imports pkg_resources
+          - "setuptools<81"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

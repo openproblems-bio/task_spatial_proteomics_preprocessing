@@ -1,0 +1,32 @@
+__merge__: /src/api/comp_method_image_correction.yaml
+
+name: no_image_correction
+label: "No image correction"
+summary: "Identity image correction baseline for multiplexed spatial proteomics images"
+description: |
+  Control method for image correction benchmarking. The component reads a multichannel
+  image from a SpatialData zarr store, converts it to channel-y-x format, optionally
+  rescales each channel to max 1, and writes the image without background or
+  illumination correction. This method is useful as an uncorrected baseline.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "spatialdata==0.5.0"
+          # spatialdata pulls in xarray_schema, which imports pkg_resources
+          - "setuptools<81"
+          - "zarr<3.0.0"
+          - "numpy"
+          - "pandas"
+          - "xarray"
+  - type: native
+
+runners:
+  - type: executable

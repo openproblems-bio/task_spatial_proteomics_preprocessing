@@ -1,0 +1,27 @@
+__merge__: /src/api/comp_method_proteomics_normalization.yaml
+
+name: no_normalization
+label: "No normalization"
+summary: "Control method that copies raw intensities into layers['normalized']"
+description: |
+  Baseline normalization method for benchmarking. It leaves the cell-by-protein
+  intensity matrix unchanged and stores the raw intensities as layers['normalized'].
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - "numpy"
+          - "scipy"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

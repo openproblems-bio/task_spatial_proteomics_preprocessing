@@ -1,0 +1,50 @@
+namespace: methods_proteomics_qc
+info:
+  type: method
+  subtype: qc_filter
+  type_info:
+    label: Proteomics QC filter
+    summary: Compute QC annotations for spatial proteomics cell-by-protein matrices
+    description: |
+      Adds quality-control annotations to an AnnData object generated from spatial proteomics images.
+      Implementations must write obs['passed_QC'] and store method metadata in uns['qc'].
+arguments:
+  - name: --input
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData h5ad with per-cell protein intensities."
+  - name: --min_area
+    type: integer
+    direction: input
+    required: false
+    default: 50
+    description: "Minimum cell area in pixels for fixed-threshold QC."
+  - name: --min_total
+    type: double
+    direction: input
+    required: false
+    default: 0.0
+    description: "Minimum total protein intensity for fixed-threshold QC."
+  - name: --area_quantile
+    type: double
+    direction: input
+    required: false
+    default: 0.05
+    description: "Lower area quantile used by adaptive quantile QC."
+  - name: --total_quantile
+    type: double
+    direction: input
+    required: false
+    default: 0.05
+    description: "Lower total-intensity quantile used by adaptive quantile QC."
+  - name: --output
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData h5ad with QC annotations."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_qc.py
+  - path: /src/testing/isp_fixtures.py

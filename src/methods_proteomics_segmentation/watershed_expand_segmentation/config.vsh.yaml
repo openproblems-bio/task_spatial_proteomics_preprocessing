@@ -1,0 +1,28 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: watershed_expand_segmentation
+label: "Watershed and expansion segmentation"
+summary: "Classical nuclear watershed segmentation followed by label expansion"
+description: |
+  Image-derived segmentation method using nuclear foreground detection, distance-transform watershed,
+  and optional expansion of nuclear labels toward approximate cell regions. This provides a stronger
+  classical baseline than simple connected-component thresholding.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "numpy"
+          - "scipy"
+          - "scikit-image"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

@@ -1,0 +1,73 @@
+namespace: metrics_proteomics
+info:
+  type: metric
+  subtype: proteomics_segmentation_quality
+  type_info:
+    label: "Proteomics segmentation quality metrics"
+    summary: "Score segmentation without reference masks, using known marker biology"
+    description: |
+      Segmentation is the central benchmarked step, but the dataset-provided
+      reference labels needed to score it directly are often unavailable. These
+      metrics exploit properties the data must satisfy if segmentation is
+      correct, so they carry a known good direction without any ground truth:
+
+        - every segmented object should contain nuclear signal;
+        - nuclear stains repeated across imaging cycles are the same physical
+          nuclei, so within one correctly delineated cell they must agree;
+        - markers restricted to mutually exclusive lineages should rarely be
+          co-positive in the same cell;
+        - a marker positive in one cell should not appear in its neighbours.
+
+      Reported over all cells and over the QC-passing subset.
+arguments:
+  - name: "--input"
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData with cell-by-protein intensities and, ideally, QC annotations."
+  - name: "--layer"
+    type: string
+    direction: input
+    required: false
+    default: "counts"
+    description: "Layer to evaluate. Falls back to X when absent."
+  - name: "--nuclear_markers"
+    type: string
+    direction: input
+    required: false
+    default: null
+    description: "Comma-separated nuclear/DNA marker names. If null, marker names matching DNA, DAPI or Hoechst are auto-detected."
+  - name: "--exclusive_pairs"
+    type: string
+    direction: input
+    required: false
+    default: null
+    description: "Comma-separated mutually exclusive marker pairs, each as A:B (for example ECAD:CD45). Co-expression metrics are NaN when unset, rather than guessed for an unknown panel."
+  - name: "--n_neighbors"
+    type: integer
+    direction: input
+    required: false
+    default: 6
+    description: "Neighbours per cell, by centroid distance, used for the spillover metric."
+  - name: "--max_cells"
+    type: integer
+    direction: input
+    required: false
+    default: 20000
+    description: "Subsample cells above this count for the neighbour search. Use 0 to disable."
+  - name: "--random_state"
+    type: integer
+    direction: input
+    required: false
+    default: 0
+    description: "Random seed used for subsampling."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData with uns['metric_ids'] and uns['metric_values']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_metrics.py
+  - path: /src/testing/isp_fixtures.py

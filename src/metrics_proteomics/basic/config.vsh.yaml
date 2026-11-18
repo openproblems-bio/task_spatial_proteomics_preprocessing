@@ -1,0 +1,72 @@
+__merge__: /src/api/comp_metric_proteomics_basic.yaml
+name: basic
+label: Basic preprocessing metrics
+summary: Compute core QC, morphology, intensity, and marker coverage metrics
+description: 'Computes a compact summary of the processed cell-by-protein matrix, including
+
+  number of cells, number of markers, QC pass rate, median cell area, median
+
+  total raw intensity, and marker coverage.
+
+  '
+resources:
+- type: python_script
+  path: script.py
+engines:
+- type: docker
+  image: openproblems/base_python:1
+  setup:
+  - type: python
+    pypi:
+    - sprotmetrics==0.1.0
+    - anndata>=0.10.0
+    - zarr<3.0.0
+- type: native
+runners:
+- type: executable
+info:
+  metrics:
+  - name: median_marker_coverage
+    label: Per-marker detection rate
+    summary: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    description: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: true
+  - name: median_marker_coverage_qc_pass
+    label: Per-marker detection rate
+    summary: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    description: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: true
+  - name: min_marker_coverage
+    label: Per-marker detection rate
+    summary: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    description: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: true
+  - name: min_marker_coverage_qc_pass
+    label: Per-marker detection rate
+    summary: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    description: Fraction of cells whose intensity exceeds `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: true

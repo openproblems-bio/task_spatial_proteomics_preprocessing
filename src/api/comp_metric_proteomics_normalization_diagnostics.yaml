@@ -1,0 +1,52 @@
+namespace: metrics_proteomics
+info:
+  type: metric
+  subtype: proteomics_normalization_diagnostics
+  type_info:
+    label: "Proteomics normalization diagnostics"
+    summary: "Compare raw and normalized intensity matrices"
+    description: |
+      Produces an AnnData object with normalization diagnostics stored in
+      uns['metric_ids'] and uns['metric_values']. The metrics compare raw counts
+      to the normalized representation and quantify total-intensity compression,
+      rank preservation, and variance changes.
+arguments:
+  - name: "--input"
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData file with layers['counts'] and preferably layers['normalized']."
+  - name: "--normalized_layer"
+    type: string
+    direction: input
+    required: false
+    default: "normalized"
+    description: "Layer containing normalized values. If missing, X is used as fallback."
+  - name: "--raw_layer"
+    type: string
+    direction: input
+    required: false
+    default: "counts"
+    description: "Layer containing raw values. If missing, X is used as fallback."
+  - name: "--max_cells"
+    type: integer
+    direction: input
+    required: false
+    default: 5000
+    description: "Maximum number of cells used for rank-preservation diagnostics. Use 0 to disable subsampling."
+  - name: "--random_state"
+    type: integer
+    direction: input
+    required: false
+    default: 0
+    description: "Random seed used for subsampling."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData file with uns['metric_ids'] and uns['metric_values']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_metrics.py
+  - path: /src/testing/isp_fixtures.py

@@ -1,0 +1,27 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: basic_threshold_segmentation
+label: "Basic threshold segmentation"
+summary: "Simple threshold-based segmentation from a nuclear channel"
+description: |
+  Baseline image-derived segmentation method.
+  It selects a nuclear marker channel, thresholds it using a configurable intensity quantile,
+  removes small objects, and converts connected components into cell labels.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "numpy"
+          - "scikit-image"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

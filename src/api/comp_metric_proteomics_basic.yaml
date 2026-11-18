@@ -1,0 +1,40 @@
+namespace: metrics_proteomics
+info:
+  type: metric
+  subtype: proteomics_basic
+  type_info:
+    label: "Proteomics basic metrics"
+    summary: "Compute basic cell-level QC, morphology, intensity, and marker coverage metrics"
+    description: |
+      Produces an AnnData object with benchmark metrics stored in uns['metric_ids']
+      and uns['metric_values']. This metric family summarizes core preprocessing
+      outputs such as cell count, QC pass rate, cell area, total intensity, and
+      marker coverage.
+arguments:
+  - name: "--input"
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData file with cell-by-protein intensities and QC annotations."
+  - name: "--cov_thr"
+    type: double
+    direction: input
+    required: false
+    default: 0.1
+    description: "Intensity threshold used for marker coverage computation."
+  - name: "--coverage_threshold"
+    type: double
+    direction: input
+    required: false
+    default: 0.1
+    description: "Backward-compatible alias for --cov_thr."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData file with uns['metric_ids'] and uns['metric_values']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_metrics.py
+  - path: /src/testing/isp_fixtures.py

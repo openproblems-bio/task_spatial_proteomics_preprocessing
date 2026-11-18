@@ -1,0 +1,47 @@
+__merge__: /src/api/comp_method_image_correction.yaml
+
+name: flatfield_image_correction
+label: "Flat-field image correction"
+summary: "Low-frequency illumination/background correction for multiplexed spatial proteomics images"
+description: |
+  Classical image correction baseline for multiplexed immunofluorescence-like data.
+  For each channel, the method subtracts a robust percentile background and estimates
+  a smooth low-frequency illumination field with a Gaussian filter. The low-frequency
+  field is then either subtracted or used for multiplicative flat-field correction.
+
+arguments:
+  - name: --flatfield_sigma
+    type: double
+    direction: input
+    required: false
+    default: 50.0
+    description: Gaussian sigma in pixels used to estimate the smooth illumination field.
+  - name: --flatfield_mode
+    type: string
+    direction: input
+    required: false
+    default: subtract
+    description: Correction mode. One of 'subtract' or 'divide'.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "spatialdata==0.5.0"
+          # spatialdata pulls in xarray_schema, which imports pkg_resources
+          - "setuptools<81"
+          - "zarr<3.0.0"
+          - "numpy"
+          - "pandas"
+          - "xarray"
+          - "scipy"
+  - type: native
+
+runners:
+  - type: executable

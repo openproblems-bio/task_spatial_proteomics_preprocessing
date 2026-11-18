@@ -1,55 +1,49 @@
-# task_template x.y.z
+# task_spatial_proteomics_preprocessing
 
-## BREAKING CHANGES
+## Unreleased
 
-<!-- * Restructured `src` directory (PR #3). -->
+Initial port of the spatial proteomics preprocessing benchmark onto the
+OpenProblems task structure. Developed in
+`juliusstein77/task_isp_preprocessing`; only the proteomics surface was
+carried across.
 
-* `run_benchmark`: replaced `--method_ids` with `--methods_include`/`--methods_exclude` and added `--metrics_include`/`--metrics_exclude` (PR #20).
+### Components
 
-## NEW FUNCTIONALITY
+* Five method namespaces, each with interchangeable alternatives sharing one
+  argument contract: `methods_image_correction`, `methods_proteomics_segmentation`,
+  `methods_protein_aggregation`, `methods_proteomics_qc`,
+  `methods_proteomics_normalization`.
+* Six metric families in `metrics_proteomics`, wrapping
+  [`sprotmetrics`](https://github.com/theislab/sprotmetrics) `0.1.0`.
 
-* Added `control_methods/true_labels` component (PR #5).
+### Conformance to the OpenProblems structure
 
-* Added `methods/logistic_regression` component (PR #5).
+* `src/api/file_score.yaml` now requires `dataset_id`, `normalization_id` and
+  `method_id` in `uns`. These were commented out in the source repository, so
+  scores carried no provenance and could not be attributed to a run.
+* Every metric component declares the `info.metrics` block that
+  `common/schemas/task_metric.yaml` requires - 66 metrics across six families,
+  generated from the `sprotmetrics` registry by
+  `scripts/create_component/generate_metric_info.py` rather than maintained by
+  hand. Metrics with no direction are deliberately omitted from that block: the
+  schema requires `maximize`, and has no way to express "descriptive", so
+  declaring them would hand the scoring stage a ranking criterion they cannot
+  support. They are still computed and still appear in the score file.
+* The workflow moves from `src/workflows/run_benchmark_isp/main_isp.nf` to the
+  conventional `src/workflows/run_benchmark/main.nf`.
 
-* Added `metrics/accuracy` component (PR #5).
+### Known gaps
 
-* Added `control_methods/random_labels` component (PR #22).
-
-* `run_benchmark`: run parameterised methods once per named paramset from `info.variants` or the new `--paramsets` file, tag scores with `paramset_name`/`paramset`, and allow `--methods_include`/`--methods_exclude` to target `<method_id>.<paramset_name>`, using the new paramset helpers in `common/nextflow_helpers/helper.nf` (PR #23).
-
-* `methods/logistic_regression`: added an `--inverse_regularization_strength` argument with three `info.variants` as an example of a parameterised method (PR #23).
-
-## MAJOR CHANGES
-
-* Updated `api` files (PR #5).
-
-* Updated configs, components and CI to the latest Viash version (PR #8).
-
-* Updated to Viash 0.9.4 (PR #12).
-
-* Use dependencies in `openproblems-bio/openproblems` (PR #12).
-
-## MINOR CHANGES
-
-* Updated `README.md` (PR #5).
-
-* `run_benchmark`: write the commit the workflow ran from and the launch time into
-  `task_info.yaml`, instead of publishing `_viash.yaml` verbatim (PR #18).
-
-* Updated to Viash 0.9.7 (PR #19).
-
-* Updated the `common` submodule (PR #19).
-
-* Fixed broken documentation links in `README.md` and `CONTRIBUTING.md`, and added a quickstart to the README (PR #21).
-
-* `run_test_local.sh` now runs as-is on the template's test resources (PR #21).
-
-* Added a placeholder `thumbnail.svg` and scoped the common test resources to `cxg_mouse_pancreas_atlas` (PR #21).
-
-## BUGFIXES
-
-* `process_dataset`: also seed `np.random` when `--seed` is set (PR #22).
-
-* `accuracy`: write `metric_values` as a list to match `metric_ids` (PR #22).
-
+* `run_benchmark/main.nf` is still the hand-written form inherited from the
+  source repository - one process per stage with a `case` block - rather than
+  the `runEach` / `fromState` idiom the template uses. Porting it is what will
+  supply the `method_id` and `dataset_id` that `file_score.yaml` now requires.
+* Test resources are not yet on S3; `_viash.yaml` points at the intended
+  location. `scripts/create_resources/isp/` builds the input locally from the
+  public MCMICRO download in the meantime.
+* There is no `workflows/process_datasets`. The template's version implements a
+  train/test/solution split for label projection, which is not the shape of this
+  task - the input is a SpatialData store, and preprocessing is what is being
+  benchmarked rather than prediction. It was removed rather than left dangling
+  against deleted API files. A real dataset processor belongs with the S3
+  resources work above.

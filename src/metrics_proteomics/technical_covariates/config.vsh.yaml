@@ -1,0 +1,223 @@
+__merge__: /src/api/comp_metric_proteomics_technical_covariates.yaml
+name: technical_covariates
+label: Technical covariate metrics
+summary: How much signal is still explained by cell area and by marker brightness
+description: "Aggregation and normalization should leave per-cell profiles reflecting\nbiology rather\
+  \ than how large a cell was or how bright its channel is.\n\nThe area metrics are reported on **both**\
+  \ layers, suffixed `_counts` and\n`_normalized`. The raw layer asks whether aggregation introduced area\n\
+  dependence; the normalized layer asks whether normalization removed it. Only\nthe raw layer can see\
+  \ the aggregation axis: per-cell total normalization\ndivides out exactly the area scaling that `sum`\
+  \ aggregation creates, so\nevaluating the normalized layer alone reports `mean` and `sum` as identical.\n\
+  \n- `variance_explained_by_covariate_{counts,normalized}` - mean R² of\n  expression regressed on cell\
+  \ area, linear and logged. Lower is better.\n- `max_marker_variance_explained_by_covariate_{counts,normalized}`\
+  \ - the worst\n  marker, so a single area-driven channel is not hidden by the panel average.\n  Lower\
+  \ is better.\n- `covariate_pc_correlation_{counts,normalized}` - mean absolute correlation\n  between\
+  \ the leading principal components and area. Lower is better.\n- `mean_variance_correlation` - dependence\
+  \ of per-marker variance on\n  per-marker mean, which a variance-stabilising transform should remove.\n\
+  \  Lower is better.\n- `marker_variance_evenness` - Shannon entropy of the per-marker variance\n  shares,\
+  \ normalised to 0-1. High means variance is spread across the panel;\n  low means a few bright markers\
+  \ dominate. Higher is better.\n\nAdapted from the scverse hackathon `sprot` prototype\n(`metrics/technical_correction.py`\
+  \ and `metrics/protein_contribution.py`).\nCell area replaces the single-cell covariates that prototype\
+  \ assumed\n(`total_counts`, `pct_mito`, `batch`), none of which exist here; PCA is done\nby SVD rather\
+  \ than scikit-learn to avoid the extra dependency.\n"
+resources:
+- type: python_script
+  path: script.py
+engines:
+- type: docker
+  image: openproblems/base_python:1
+  setup:
+  - type: python
+    pypi:
+    - sprotmetrics==0.1.0
+    - anndata>=0.10.0
+    - zarr<3.0.0
+- type: native
+runners:
+- type: executable
+info:
+  metrics:
+  - name: mean_variance_explained_by_covariate_counts
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_variance_explained_by_covariate_counts_qc_pass
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_variance_explained_by_covariate_normalized
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_variance_explained_by_covariate_normalized_qc_pass
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: max_variance_explained_by_covariate_counts
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: max_variance_explained_by_covariate_counts_qc_pass
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: max_variance_explained_by_covariate_normalized
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: max_variance_explained_by_covariate_normalized_qc_pass
+    label: Expression variance explained by cell area
+    summary: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    description: R^2 of each marker on cell area, fitted on ``[1, area, log1p(area)]``.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_covariate_pc_correlation_counts
+    label: Correlation of leading PCs with cell area
+    summary: Absolute correlation of each leading principal component with cell area.
+    description: Absolute correlation of each leading principal component with cell area.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_covariate_pc_correlation_counts_qc_pass
+    label: Correlation of leading PCs with cell area
+    summary: Absolute correlation of each leading principal component with cell area.
+    description: Absolute correlation of each leading principal component with cell area.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_covariate_pc_correlation_normalized
+    label: Correlation of leading PCs with cell area
+    summary: Absolute correlation of each leading principal component with cell area.
+    description: Absolute correlation of each leading principal component with cell area.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_covariate_pc_correlation_normalized_qc_pass
+    label: Correlation of leading PCs with cell area
+    summary: Absolute correlation of each leading principal component with cell area.
+    description: Absolute correlation of each leading principal component with cell area.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_variance_correlation
+    label: Dependence of marker variance on marker mean
+    summary: Correlation between per-marker mean and per-marker variance.
+    description: "Correlation between per-marker mean and per-marker variance.\n\n    Tests whether the\
+      \ transform stabilised variance: a strong positive\n    correlation means bright markers are still\
+      \ the variable ones."
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: -1
+    max: 1
+    maximize: false
+  - name: mean_variance_correlation_qc_pass
+    label: Dependence of marker variance on marker mean
+    summary: Correlation between per-marker mean and per-marker variance.
+    description: "Correlation between per-marker mean and per-marker variance.\n\n    Tests whether the\
+      \ transform stabilised variance: a strong positive\n    correlation means bright markers are still\
+      \ the variable ones."
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: -1
+    max: 1
+    maximize: false
+  - name: marker_variance_evenness
+    label: Evenness of variance across the panel
+    summary: Shannon entropy of each marker's share of total variance, normalised to [0, 1].
+    description: "Shannon entropy of each marker's share of total variance, normalised to [0, 1].\n\n\
+      \    Low means a few bright markers dominate the variance and the rest contribute\n    nothing to\
+      \ any downstream embedding."
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: true
+  - name: marker_variance_evenness_qc_pass
+    label: Evenness of variance across the panel
+    summary: Shannon entropy of each marker's share of total variance, normalised to [0, 1].
+    description: "Shannon entropy of each marker's share of total variance, normalised to [0, 1].\n\n\
+      \    Low means a few bright markers dominate the variance and the rest contribute\n    nothing to\
+      \ any downstream embedding."
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: true
