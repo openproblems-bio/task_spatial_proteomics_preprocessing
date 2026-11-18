@@ -8,7 +8,7 @@ cd "$REPO_ROOT"
 
 # remove this when you have updated the script for your task
 echo "TODO: update this script to fit your task."
-echo "  Step 1: replace 'task_template' with the name of the task in the commands below."
+echo "  Step 1: replace 'task_spatial_proteomics_preprocessing' with the name of the task in the commands below."
 echo "  Step 2: update the rename keys to match the run_benchmark workflow inputs."
 echo "  Step 3: remove this message."
 exit 1
@@ -17,17 +17,17 @@ set -e
 
 # generate a unique id
 RUN_ID="run_$(date +%Y-%m-%d_%H-%M-%S)"
-publish_dir="s3://openproblems-data/resources/task_template/results/${RUN_ID}"
+publish_dir="s3://openproblems-data/resources/task_spatial_proteomics_preprocessing/results/${RUN_ID}"
 
 # write the parameters to file
 cat > /tmp/params.yaml << HERE
-input_states: s3://openproblems-data/resources/task_template/datasets/**/state.yaml
+input_states: s3://openproblems-data/resources/task_spatial_proteomics_preprocessing/datasets/**/state.yaml
 rename_keys: 'input_train:output_train;input_test:output_test;input_solution:output_solution'
 output_state: "state.yaml"
 publish_dir: "$publish_dir"
 HERE
 
-tw launch https://github.com/openproblems-bio/task_template.git \
+tw launch https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing.git \
   --revision build/main \
   --pull-latest \
   --main-script target/nextflow/workflows/run_benchmark/main.nf \
@@ -36,4 +36,4 @@ tw launch https://github.com/openproblems-bio/task_template.git \
   --params-file /tmp/params.yaml \
   --entry-name auto \
   --config common/nextflow_helpers/labels_tw.config \
-  --labels task_template,full
+  --labels task_spatial_proteomics_preprocessing,full

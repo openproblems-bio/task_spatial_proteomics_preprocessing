@@ -1,0 +1,31 @@
+__merge__: /src/api/comp_method_proteomics_qc.yaml
+
+name: basic_qc_filter
+namespace: methods_proteomics_qc
+
+info:
+  label: "basic_qc_filter"
+  summary: "Fixed-threshold QC based on cell area and total protein intensity."
+  description: |
+    Benchmark QC method that marks cells as passing when they satisfy fixed thresholds for segmented cell area
+    and total protein intensity.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - numpy
+          - pandas
+          - scipy
+
+  - type: native
+
+runners:
+  - type: executable

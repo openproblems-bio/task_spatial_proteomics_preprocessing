@@ -1,0 +1,45 @@
+namespace: methods_proteomics_normalization
+info:
+  type: method
+  subtype: normalization
+  type_info:
+    label: "Proteomics normalization"
+    summary: "Normalize cell-by-protein intensity matrices"
+    description: |
+      Shared interface for spatial proteomics normalization methods.
+      Components read an AnnData object with raw intensities in layers['counts']
+      or X and write an AnnData object containing layers['normalized'].
+arguments:
+  - name: "--input"
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData file with cell-by-protein intensities."
+  - name: "--scale"
+    type: double
+    direction: input
+    required: false
+    default: 10000.0
+    description: "Target total intensity used by total-log1p normalization."
+  - name: "--cofactor"
+    type: double
+    direction: input
+    required: false
+    default: 5.0
+    description: "Cofactor used by arcsinh normalization."
+  - name: "--transform"
+    type: string
+    direction: input
+    required: false
+    default: "log1p"
+    description: "Legacy transform argument kept for backward compatibility."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData file with layers['normalized']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_normalization.py
+  - path: /src/testing/isp_fixtures.py

@@ -14,7 +14,7 @@ cd "$REPO_ROOT"
 set -e
 
 RAW_DATA=resources_test/common
-DATASET_DIR=resources_test/task_template
+DATASET_DIR=resources_test/task_spatial_proteomics_preprocessing
 
 mkdir -p $DATASET_DIR
 
@@ -49,5 +49,5 @@ HERE
 
 # only run this if you have access to the openproblems-data bucket
 aws s3 sync --profile op \
-  "$DATASET_DIR" s3://openproblems-data/resources_test/task_template \
+  "$DATASET_DIR" s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing \
   --delete --dryrun

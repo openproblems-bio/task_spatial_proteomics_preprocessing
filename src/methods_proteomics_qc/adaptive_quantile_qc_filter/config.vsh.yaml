@@ -1,0 +1,31 @@
+__merge__: /src/api/comp_method_proteomics_qc.yaml
+
+name: adaptive_quantile_qc_filter
+namespace: methods_proteomics_qc
+
+info:
+  label: "adaptive_quantile_qc_filter"
+  summary: "Data-adaptive QC based on lower quantiles of area and total intensity."
+  description: |
+    Benchmark QC method that estimates dataset-specific lower thresholds from the cell area and total protein
+    intensity distributions. This provides a data-adaptive alternative to fixed absolute thresholds.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - numpy
+          - pandas
+          - scipy
+
+  - type: native
+
+runners:
+  - type: executable

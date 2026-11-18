@@ -1,0 +1,90 @@
+namespace: methods_proteomics_segmentation
+info:
+  type: method
+  subtype: segmentation
+  type_info:
+    label: "Proteomics segmentation"
+    summary: "Segment cells from corrected spatial proteomics images"
+    description: |
+      Produces a cell label image from corrected multichannel protein images or from reference labels stored in a SpatialData object.
+      The API is intentionally shared by multiple segmentation methods so that benchmark workflows can swap methods while preserving standardized outputs.
+arguments:
+  - name: "--input_image"
+    type: file
+    direction: input
+    required: false
+    description: "Corrected image as numpy array in channel-y-x format. Required for image-derived segmentation methods."
+  - name: "--input_zarr"
+    type: file
+    direction: input
+    required: false
+    description: "SpatialData Zarr store. Required for reference-label segmentation."
+  - name: "--labels_key"
+    type: string
+    direction: input
+    required: false
+    default: null
+    description: "SpatialData labels key to use for reference segmentation. If null, the first labels element is used."
+  - name: "--nuclei_channel"
+    type: integer
+    direction: input
+    required: false
+    default: 0
+    description: "Channel index used as nuclear marker for image-derived segmentation."
+  - name: "--threshold_method"
+    type: string
+    direction: input
+    required: false
+    default: "quantile"
+    description: "Strategy used to threshold the nuclear channel. One of quantile or otsu."
+  - name: "--threshold_quantile"
+    type: double
+    direction: input
+    required: false
+    default: 0.90
+    description: "Quantile used to threshold the nuclear channel."
+  - name: "--min_area"
+    type: integer
+    direction: input
+    required: false
+    default: 30
+    description: "Minimum object size in pixels."
+  - name: "--smoothing_sigma"
+    type: double
+    direction: input
+    required: false
+    default: 1.0
+    description: "Gaussian smoothing sigma used by watershed-based segmentation."
+  - name: "--hole_area"
+    type: integer
+    direction: input
+    required: false
+    default: 64
+    description: "Maximum hole area removed from the nuclear foreground mask."
+  - name: "--seed_min_distance"
+    type: integer
+    direction: input
+    required: false
+    default: 5
+    description: "Minimum distance between watershed seed points."
+  - name: "--expansion_distance"
+    type: integer
+    direction: input
+    required: false
+    default: 5
+    description: "Pixel distance used to expand nuclear labels toward approximate cell regions."
+  - name: "--output_labels"
+    type: file
+    direction: output
+    required: true
+    description: "Output segmentation label image as a numpy array."
+  - name: "--output_metadata"
+    type: file
+    direction: output
+    required: false
+    description: "Optional JSON file describing the segmentation method, its parameters, and the resulting object count."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_segmentation.py
+  - path: /src/testing/isp_fixtures.py
