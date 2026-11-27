@@ -1,0 +1,40 @@
+type: file
+example: "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/dataset.zarr"
+label: "Spatial proteomics dataset"
+summary: "A SpatialData Zarr store holding a registered multiplexed protein image."
+description: |
+  The single input to the benchmark. Every method chain starts here, so this is
+  the one format a new dataset has to be converted into.
+
+  The store must contain at least one `Images` element with dims `(c, y, x)`
+  whose channel coordinate carries the marker names, since the benchmark reports
+  per-marker metrics and has no other source for those names. A `Labels` element
+  is optional and is read only by the `reference_segmentation` method; without
+  it that method cannot run, and the remaining segmentation methods derive their
+  masks from the image.
+
+  `--image_key` and `--labels_key` select the elements. Left unset, the first
+  element of each kind is used, which is unambiguous for the single-image stores
+  the benchmark is developed against.
+
+  `scripts/create_resources/isp/prepare_exemplar_001.sh` builds such a store
+  from the public MCMICRO `exemplar-001` acquisition, whose raw download is
+  unstitched tiles rather than a registered mosaic.
+info:
+  format:
+    type: spatialdata_zarr
+    images:
+      - type: object
+        name: image
+        description: |
+          Multiplexed protein image, dims `(c, y, x)`, with marker names on the
+          channel coordinate. Any element name is accepted; `image` is what the
+          bundled conversion script writes.
+        required: true
+    labels:
+      - type: object
+        name: cell
+        description: |
+          Reference cell label mask, dims `(y, x)`, integer labels with 0 as
+          background. Required only by `reference_segmentation`.
+        required: false

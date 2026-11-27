@@ -16,7 +16,7 @@ how to add a method, and how to run the tests.
 
 | Tool | Version | Purpose |
 |---|---|---|
-| [Viash](https://viash.io) | 0.9.4 (pinned in `_viash.yaml`) | Turns `config.vsh.yaml` + `script.py` into a standalone executable |
+| [Viash](https://viash.io) | 0.9.7 (pinned in `_viash.yaml`) | Turns `config.vsh.yaml` + `script.py` into an executable and a Nextflow module |
 | Nextflow | tested with 24.04.3 | Runs the workflow |
 | Docker | any recent | Default execution engine for components |
 
@@ -36,7 +36,7 @@ src/
   methods_proteomics_normalization/
   metrics_proteomics/
   testing/                Synthetic fixtures and the shared test scripts
-  workflows/run_benchmark_isp/
+  workflows/run_benchmark/
                           main.nf, config.vsh.yaml, test.sh
 scripts/thesis_benchmark/ Drivers for the 15 published runs, plus figure/table generation
 docs/metrics_catalogue.csv What every metric measures, its direction, and its origin
@@ -119,10 +119,17 @@ Say you are adding a segmentation method.
 
    runners:
      - type: executable
+     - type: nextflow
    ```
 
    Keep the `native` engine: without it the component is invisible to
    `viash ns test --engine native` and silently drops out of the test suite.
+
+   Keep the `nextflow` runner too: it is what Viash needs to emit the component
+   as a Nextflow module, and the benchmark workflow composes modules rather than
+   shelling out to the built executables. Without it the workflow does not
+   build at all - `viash ns build` reports the component as a missing
+   dependency, which does not point at the missing runner.
 
 2. **Write `script.py`.** Read from `par`, write the declared outputs, and end
    with the `## VIASH START` / `## VIASH END` block giving defaults for direct
@@ -135,10 +142,15 @@ Say you are adding a segmentation method.
    Viash 0.9 does *not* reject unknown arguments; it warns and treats them as
    positional, so this failure mode is silent.
 
-4. **Register it with the workflow** in three places:
-   - `src/workflows/run_benchmark/config.vsh.yaml` under `dependencies`
-   - `main.nf`: an `*_EXE` constant and a branch in the stage's `case`
-   - `src/workflows/run_benchmark/test.sh`: the build list
+4. **Register it with the workflow** in two places:
+   - `src/workflows/run_benchmark/config.vsh.yaml`: under `dependencies`, and
+     in the step's `--*_methods` default if it should run by default
+   - `src/workflows/run_benchmark/main.nf`: add the module name to the step's
+     method list (`corr_methods`, `segm_methods`, `aggr_methods`, `qc_methods`,
+     `norm_methods`)
+
+   Nothing else. The step's `fromState` already maps the API's arguments, so a
+   method that honours the contract needs no workflow code of its own.
 
 5. **Run the tests** (below). The shared test script for the namespace picks up
    the new component automatically; extend it if the method needs a new
@@ -197,40 +209,87 @@ at all usually means no component in it declares the engine you asked for.
 
 ```bash
 ZARR_PATH=/path/to/exemplar-001.zarr \
+NUCLEAR_MARKERS="DNA_6,DNA_7,DNA_8" \
+EXCLUSIVE_PAIRS="ECAD:CD45,ECAD:CD11B,SMA:CD45" \
 bash src/workflows/run_benchmark/test.sh
 ```
 
-`test.sh` rebuilds every component and then runs `main.nf`. It must be
-launched from the repository root: `main.nf` resolves component executables
-relative to `workflow.launchDir`.
+`test.sh` runs `viash ns build`, which emits every component as a Nextflow
+module and the workflow as `target/nextflow/workflows/run_benchmark/main.nf`,
+then runs that. It must be launched from the repository root.
 
-`VIASH_ENGINE` (default `docker`) selects the engine both for the build and for
-the run; the two must agree, which is why one variable drives both. Set it to
-`native` to run without Docker:
+The execution engine is a Nextflow profile rather than a workflow argument,
+because the workflow composes Viash modules instead of calling the built
+executables. Use `PROFILE=singularity` where Docker is unavailable, or no
+profile at all to run components against the local Python environment:
 
 ```bash
-VIASH_ENGINE=native ZARR_PATH=/path/to/exemplar-001.zarr \
-bash src/workflows/run_benchmark/test.sh
+PROFILE= ZARR_PATH=/path/to/exemplar-001.zarr bash src/workflows/run_benchmark/test.sh
 ```
 
 The dataset itself is not in the repository and the public download is not in
 the form the workflow wants; `scripts/create_resources/isp/prepare_exemplar_001.sh`
 builds it. See **Data availability** in [README.md](README.md).
 
-Method choice and parameters come from environment variables — see the table in
-[README.md](README.md). To vary one module at a time across the published
-comparison set, use `scripts/thesis_benchmark/run_15_benchmark_runs.sh`.
+### Which combinations get run
+
+One invocation runs many chains, not one. `--default_methods` names the
+baseline - one method per step - and a method that is not a default is only
+ever combined with the defaults, so each non-baseline chain differs from the
+baseline in exactly one step. With the shipped defaults that is 10 chains
+rather than the 162 a cross-product would give, and it is what makes a
+difference in a metric attributable to a single choice.
+
+To restrict a run, pass the step's list:
+
+```bash
+SEGMENTATION_METHODS="basic_threshold_segmentation;watershed_expand_segmentation" \
+ZARR_PATH=... bash src/workflows/run_benchmark/test.sh
+```
+
+### Varying a method's parameters
+
+Per-method parameters are not workflow arguments. They come from the component
+defaults, or from a YAML passed as `METHOD_PARAMETERS_YAML`:
+
+```yaml
+parameters:
+  basic_threshold_segmentation:
+    default:
+      threshold_method: otsu
+    sweep:
+      threshold_quantile: [0.85, 0.90, 0.95]
+```
+
+`default` changes that method's arguments wherever it runs. Each `sweep` value
+becomes its own chain, tagged with a variant name such as
+`basic_threshold_segmentation_threshold_quantile_0.85`, and sweeps expand only
+against the baseline for the same reason non-default methods do.
+
+### Outputs
+
+The run publishes five files:
+
+| file | what it holds |
+|---|---|
+| `score_uns.yaml` | one record per (chain, metric component): the metric ids and values, the chain that produced them, and the run id of every step |
+| `method_configs.yaml` | the config of every method component in the run |
+| `metric_configs.yaml` | the config of every metric component, including the `info.metrics` block that declares each metric's direction and bounds |
+| `dataset_uns.yaml` | what is known about the input |
+| `task_info.yaml` | the task's `_viash.yaml` |
+
+Provenance lives in `score_uns.yaml` rather than in the metric files, because
+no single component knows the chain: a metric reads the normalized matrix and
+has no record of the four steps before the last.
 
 ## Known rough edges
 
 Worth knowing before you plan larger changes:
 
-- `main.nf` is hand-written Nextflow with a `case` block per stage, rather
-  than the OpenProblems `runEach` / `fromState` idiom used by the legacy iST
-  workflow in `src/workflows/run_benchmark/main.nf`. One run covers exactly one
-  method combination; sweeps are done by an outer bash loop.
-- There is no scoring stage in the workflow. Result tables are assembled
-  afterwards by `scripts/thesis_benchmark/collect_benchmark_results.py`.
+- `dataset_uns.yaml` carries little more than the run id. The input is a
+  SpatialData zarr rather than an h5ad, so `utils/extract_uns_metadata` cannot
+  read metadata off it, and the task has no datasets workflow that would write
+  that metadata into the store in the first place.
 - Image components load the whole image with `np.asarray(...)`, with no dask or
   multiscale handling, and infer channel order from a shape heuristic. The
   corrected image is written as a dense float32 `.npy`, which for exemplar-001

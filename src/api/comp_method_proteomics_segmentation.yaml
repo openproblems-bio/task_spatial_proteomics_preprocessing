@@ -74,11 +74,13 @@ arguments:
     default: 5
     description: "Pixel distance used to expand nuclear labels toward approximate cell regions."
   - name: "--output_labels"
+    example: segmentation_labels.npy
     type: file
     direction: output
     required: true
     description: "Output segmentation label image as a numpy array."
   - name: "--output_metadata"
+    example: segmentation_metadata.json
     type: file
     direction: output
     required: false

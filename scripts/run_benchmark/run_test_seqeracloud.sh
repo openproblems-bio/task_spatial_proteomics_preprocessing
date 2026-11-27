@@ -6,11 +6,11 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 # ensure that the command below is run from the root of the repository
 cd "$REPO_ROOT"
 
-# remove this when you have updated the script for your task
-echo "TODO: update this script to fit your task."
-echo "  Step 1: replace 'task_spatial_proteomics_preprocessing' with the name of the task in the commands below."
-echo "  Step 2: update the parameters to match the run_benchmark workflow inputs."
-echo "  Step 3: remove this message."
+# This needs s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing/,
+# which has not been populated yet - nothing has been uploaded for this task. Until
+# it is, run scripts/run_benchmark/run_test_local.sh against a locally built zarr.
+echo "TODO: upload test resources before using this script."
+echo "  See the test_resources note in _viash.yaml."
 exit 1
 
 set -e
@@ -20,10 +20,8 @@ publish_dir_s3="s3://openproblems-nextflow/temp/results/$(date +%Y-%m-%d_%H-%M-%
 
 # write the parameters to file
 cat > /tmp/params.yaml << HERE
-id: cxg_mouse_pancreas_atlas
-input_train: $resources_test_s3/cxg_mouse_pancreas_atlas/train.h5ad
-input_test: $resources_test_s3/cxg_mouse_pancreas_atlas/test.h5ad
-input_solution: $resources_test_s3/cxg_mouse_pancreas_atlas/solution.h5ad
+id: exemplar_001
+input_zarr: $resources_test_s3/exemplar_001/dataset.zarr
 output_state: "state.yaml"
 publish_dir: $publish_dir_s3
 HERE
