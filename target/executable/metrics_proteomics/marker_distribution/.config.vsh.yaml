@@ -1,0 +1,357 @@
+name: "marker_distribution"
+namespace: "metrics_proteomics"
+version: "build_main"
+argument_groups:
+- name: "Arguments"
+  arguments:
+  - type: "file"
+    name: "--input"
+    description: "Input AnnData file with cell-by-protein intensities."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--layer"
+    description: "Layer to evaluate. If missing, X is used. Use counts for raw marker\
+      \ distributions."
+    info: null
+    default:
+    - "counts"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--zero_threshold"
+    description: "Values less than or equal to this threshold are counted as zero\
+      \ or absent."
+    info: null
+    default:
+    - 0.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--coverage_threshold"
+    description: "Values above this threshold are counted as marker-positive for coverage."
+    info: null
+    default:
+    - 0.1
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--low_quantile"
+    description: "Lower quantile for robust dynamic-range estimation."
+    info: null
+    default:
+    - 0.01
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--high_quantile"
+    description: "Upper quantile for robust dynamic-range estimation."
+    info: null
+    default:
+    - 0.99
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--output"
+    description: "Output AnnData file with uns['metric_ids'] and uns['metric_values']."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "output"
+    multiple: false
+    multiple_sep: ";"
+resources:
+- type: "python_script"
+  path: "script.py"
+  is_executable: true
+label: "Marker distribution metrics"
+summary: "Compute marker-level intensity, sparsity, coverage, and dynamic-range metrics"
+description: "Computes marker-level distribution diagnostics that are useful for comparing\n\
+  image correction, segmentation, aggregation, QC, and normalization choices.\n"
+test_resources:
+- type: "python_script"
+  path: "test_metrics.py"
+  is_executable: true
+- type: "file"
+  path: "isp_fixtures.py"
+info:
+  metrics:
+  - name: "median_marker_zero_fraction"
+    label: "Per-marker fraction at or below zero"
+    summary: "Fraction of cells at or below `threshold`, per marker."
+    description: "Fraction of cells at or below `threshold`, per marker."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "median_marker_zero_fraction_qc_pass"
+    label: "Per-marker fraction at or below zero"
+    summary: "Fraction of cells at or below `threshold`, per marker."
+    description: "Fraction of cells at or below `threshold`, per marker."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "mean_marker_zero_fraction"
+    label: "Per-marker fraction at or below zero"
+    summary: "Fraction of cells at or below `threshold`, per marker."
+    description: "Fraction of cells at or below `threshold`, per marker."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "mean_marker_zero_fraction_qc_pass"
+    label: "Per-marker fraction at or below zero"
+    summary: "Fraction of cells at or below `threshold`, per marker."
+    description: "Fraction of cells at or below `threshold`, per marker."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "median_marker_dynamic_range"
+    label: "Per-marker dynamic range"
+    summary: "High minus low quantile of intensity, per marker."
+    description: "High minus low quantile of intensity, per marker."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "median_marker_dynamic_range_qc_pass"
+    label: "Per-marker dynamic range"
+    summary: "High minus low quantile of intensity, per marker."
+    description: "High minus low quantile of intensity, per marker."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "median_marker_bimodality"
+    label: "Marker positive-population separability"
+    summary: "Separability of the two populations an Otsu split produces, per marker."
+    description: "Separability of the two populations an Otsu split produces, per\
+      \ marker.\n\n    ``otsu_variance_ratio`` is between-class over within-class\
+      \ variance.\n    ``bimodality_index`` is Wang et al. (2009), ``sqrt(p(1-p))\
+      \ * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly\
+      \ BI > 1.1).\n\n    This is what image correction and normalization are *for*,\
+      \ and nothing in the\n    benchmark measured it."
+    references:
+      doi:
+      - "10.4137/CIN.S2846"
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "median_marker_bimodality_qc_pass"
+    label: "Marker positive-population separability"
+    summary: "Separability of the two populations an Otsu split produces, per marker."
+    description: "Separability of the two populations an Otsu split produces, per\
+      \ marker.\n\n    ``otsu_variance_ratio`` is between-class over within-class\
+      \ variance.\n    ``bimodality_index`` is Wang et al. (2009), ``sqrt(p(1-p))\
+      \ * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly\
+      \ BI > 1.1).\n\n    This is what image correction and normalization are *for*,\
+      \ and nothing in the\n    benchmark measured it."
+    references:
+      doi:
+      - "10.4137/CIN.S2846"
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "min_marker_bimodality"
+    label: "Marker positive-population separability"
+    summary: "Separability of the two populations an Otsu split produces, per marker."
+    description: "Separability of the two populations an Otsu split produces, per\
+      \ marker.\n\n    ``otsu_variance_ratio`` is between-class over within-class\
+      \ variance.\n    ``bimodality_index`` is Wang et al. (2009), ``sqrt(p(1-p))\
+      \ * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly\
+      \ BI > 1.1).\n\n    This is what image correction and normalization are *for*,\
+      \ and nothing in the\n    benchmark measured it."
+    references:
+      doi:
+      - "10.4137/CIN.S2846"
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "min_marker_bimodality_qc_pass"
+    label: "Marker positive-population separability"
+    summary: "Separability of the two populations an Otsu split produces, per marker."
+    description: "Separability of the two populations an Otsu split produces, per\
+      \ marker.\n\n    ``otsu_variance_ratio`` is between-class over within-class\
+      \ variance.\n    ``bimodality_index`` is Wang et al. (2009), ``sqrt(p(1-p))\
+      \ * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly\
+      \ BI > 1.1).\n\n    This is what image correction and normalization are *for*,\
+      \ and nothing in the\n    benchmark measured it."
+    references:
+      doi:
+      - "10.4137/CIN.S2846"
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  type: "metric"
+  subtype: "proteomics_marker_distribution"
+  type_info:
+    label: "Proteomics marker distribution metrics"
+    summary: "Compute marker-level sparsity, coverage, intensity, and dynamic-range\
+      \ metrics"
+    description: "Produces an AnnData object with marker distribution metrics stored\
+      \ in\nuns['metric_ids'] and uns['metric_values']. These metrics are useful for\n\
+      comparing preprocessing choices that alter marker intensity distributions.\n"
+status: "enabled"
+scope:
+  image: "public"
+  target: "public"
+repositories:
+- type: "github"
+  name: "openproblems"
+  repo: "openproblems-bio/openproblems"
+  tag: "build/main"
+license: "MIT"
+links:
+  repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+  docker_registry: "ghcr.io"
+runners:
+- type: "executable"
+  id: "executable"
+  docker_setup_strategy: "ifneedbepullelsecachedbuild"
+engines:
+- type: "docker"
+  id: "docker"
+  image: "openproblems/base_python:1"
+  namespace_separator: "/"
+  setup:
+  - type: "python"
+    user: false
+    pypi:
+    - "sprotmetrics==0.1.0"
+    - "anndata>=0.10.0"
+    - "zarr<3.0.0"
+    upgrade: true
+  entrypoint: []
+  cmd: null
+- type: "native"
+  id: "native"
+build_info:
+  config: "src/metrics_proteomics/marker_distribution/config.vsh.yaml"
+  runner: "executable"
+  engine: "docker|native"
+  output: "target/executable/metrics_proteomics/marker_distribution"
+  executable: "target/executable/metrics_proteomics/marker_distribution/marker_distribution"
+  viash_version: "0.9.7"
+  git_commit: "7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+  git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+package_config:
+  name: "task_spatial_proteomics_preprocessing"
+  version: "build_main"
+  label: "Spatial Proteomics Preprocessing"
+  summary: "Benchmarking preprocessing workflows that turn multiplexed protein images\
+    \ into cell-by-protein matrices."
+  description: "Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC\
+    \ - produce\nmultiplexed images in which each channel is an antibody-stained protein\
+    \ marker.\nTurning those images into cell-level protein profiles takes a chain\
+    \ of\npreprocessing choices: correcting the image, segmenting cells, aggregating\n\
+    pixel intensities per cell, applying quality control, and normalizing. Each\n\
+    choice changes the cell-by-protein matrix that every downstream analysis is\n\
+    built on, there is no established consensus on which to make, and the effect\n\
+    of any single one is rarely reported in isolation.\n\nThis task benchmarks those\
+    \ steps as interchangeable modules. The input is a\nSpatialData Zarr store holding\
+    \ a multichannel image and, optionally, reference\nsegmentation labels. The output\
+    \ is a standardized cell-by-protein AnnData\nobject together with preprocessing\
+    \ quality metrics. Methods within a module\nshare an argument contract, so a run\
+    \ can swap one module while holding the\nrest fixed.\n\nThe metrics are deliberately\
+    \ reference-free wherever possible: they score a\nresult against properties the\
+    \ data must satisfy if preprocessing is correct -\nevery segmented object should\
+    \ contain nuclear signal, nuclear stains repeated\nacross imaging cycles are the\
+    \ same physical nuclei and must agree within a\ncell, markers confined to incompatible\
+    \ lineages should rarely be co-positive,\nand expression should not be explained\
+    \ by how large a cell happened to be.\nThis matters because ground-truth segmentation\
+    \ masks are unavailable for most\nreal datasets, including the public exemplar\
+    \ this task is developed against.\n\nThe task stops at preprocessing. Cell-type\
+    \ annotation and biological\ninterpretation are treated as downstream consumers\
+    \ of the output rather than\nas benchmarked steps.\n\nThe metric implementations\
+    \ live in the `sprotmetrics` package\n(https://github.com/theislab/sprotmetrics);\
+    \ the components here are the Viash\ncontracts around them.\n"
+  info:
+    image: "thumbnail.svg"
+  repositories:
+  - type: "github"
+    name: "openproblems"
+    repo: "openproblems-bio/openproblems"
+    tag: "build/main"
+  viash_version: "0.9.7"
+  source: "src"
+  target: "target"
+  config_mods:
+  - ".runners[.type == \"nextflow\"].config.labels := { lowmem : \"memory = 20.Gb\"\
+    , midmem : \"memory = 50.Gb\", highmem : \"memory = 100.Gb\", lowcpu : \"cpus\
+    \ = 5\", midcpu : \"cpus = 15\", highcpu : \"cpus = 30\", lowtime : \"time = 1.h\"\
+    , midtime : \"time = 4.h\", hightime : \"time = 8.h\", veryhightime : \"time =\
+    \ 24.h\" }\n"
+  authors:
+  - name: "Julius Stein"
+    roles:
+    - "author"
+    info:
+      github: "juliusstein77"
+  - name: "Sergio Marco Salas"
+    roles:
+    - "author"
+    - "maintainer"
+    info:
+      github: "sergiomarco25"
+  keywords:
+  - "single-cell"
+  - "openproblems"
+  - "benchmark"
+  - "spatial proteomics"
+  - "multiplexed imaging"
+  - "preprocessing"
+  license: "MIT"
+  organization: "openproblems-bio"
+  references:
+    doi:
+    - "10.1038/s41592-021-01308-y"
+  links:
+    repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+    docker_registry: "ghcr.io"
+    issue_tracker: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues"

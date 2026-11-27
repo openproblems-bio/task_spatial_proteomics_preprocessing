@@ -1,0 +1,98 @@
+__merge__: /src/api/comp_metric_proteomics_normalization_diagnostics.yaml
+name: normalization_diagnostics
+label: Normalization diagnostics
+summary: Compute diagnostics comparing raw and normalized protein intensity matrices
+description: 'Computes metrics for assessing how normalization changes the data, including
+
+  total-intensity coefficient of variation before and after normalization,
+
+  per-cell rank preservation, and marker variance changes.
+
+  '
+resources:
+- type: python_script
+  path: script.py
+engines:
+- type: docker
+  image: openproblems/base_python:1
+  setup:
+  - type: python
+    pypi:
+    - sprotmetrics==0.1.0
+    - anndata>=0.10.0
+    - zarr<3.0.0
+- type: native
+runners:
+- type: executable
+info:
+  metrics:
+  - name: total_cv_raw
+    label: Spread of per-cell total intensity
+    summary: Coefficient of variation of per-cell summed intensity.
+    description: Coefficient of variation of per-cell summed intensity.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: false
+  - name: total_cv_raw_qc_pass
+    label: Spread of per-cell total intensity
+    summary: Coefficient of variation of per-cell summed intensity.
+    description: Coefficient of variation of per-cell summed intensity.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: false
+  - name: total_cv_normalized
+    label: Spread of per-cell total intensity
+    summary: Coefficient of variation of per-cell summed intensity.
+    description: Coefficient of variation of per-cell summed intensity.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: false
+  - name: total_cv_normalized_qc_pass
+    label: Spread of per-cell total intensity
+    summary: Coefficient of variation of per-cell summed intensity.
+    description: Coefficient of variation of per-cell summed intensity.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: false
+  - name: total_cv_ratio_norm_over_raw
+    label: Compression of total-intensity spread
+    summary: Normalized over raw coefficient of variation of per-cell totals.
+    description: "Normalized over raw coefficient of variation of per-cell totals.\n\n    Below 1 means\
+      \ the normalization compressed the spread in per-cell total\n    intensity, which is what it is\
+      \ for."
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: false
+  - name: total_cv_ratio_norm_over_raw_qc_pass
+    label: Compression of total-intensity spread
+    summary: Normalized over raw coefficient of variation of per-cell totals.
+    description: "Normalized over raw coefficient of variation of per-cell totals.\n\n    Below 1 means\
+      \ the normalization compressed the spread in per-cell total\n    intensity, which is what it is\
+      \ for."
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: false

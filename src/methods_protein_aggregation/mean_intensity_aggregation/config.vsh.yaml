@@ -1,0 +1,31 @@
+__merge__: /src/api/comp_method_protein_aggregation_arrays.yaml
+
+name: mean_intensity_aggregation
+namespace: methods_protein_aggregation
+
+info:
+  label: "mean_intensity_aggregation"
+  summary: "Aggregate per-cell marker intensities using the mean pixel intensity."
+  description: |
+    Benchmark method for converting corrected multichannel spatial proteomics images and segmentation masks into
+    cell-by-protein intensity matrices. This component implements the mean_intensity_aggregation strategy.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - numpy
+          - pandas
+          - anndata
+          - scikit-image
+
+  - type: native
+
+runners:
+  - type: executable

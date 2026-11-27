@@ -1,0 +1,57 @@
+namespace: metrics_proteomics
+info:
+  type: metric
+  subtype: proteomics_marker_distribution
+  type_info:
+    label: "Proteomics marker distribution metrics"
+    summary: "Compute marker-level sparsity, coverage, intensity, and dynamic-range metrics"
+    description: |
+      Produces an AnnData object with marker distribution metrics stored in
+      uns['metric_ids'] and uns['metric_values']. These metrics are useful for
+      comparing preprocessing choices that alter marker intensity distributions.
+arguments:
+  - name: "--input"
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData file with cell-by-protein intensities."
+  - name: "--layer"
+    type: string
+    direction: input
+    required: false
+    default: "counts"
+    description: "Layer to evaluate. If missing, X is used. Use counts for raw marker distributions."
+  - name: "--zero_threshold"
+    type: double
+    direction: input
+    required: false
+    default: 0.0
+    description: "Values less than or equal to this threshold are counted as zero or absent."
+  - name: "--coverage_threshold"
+    type: double
+    direction: input
+    required: false
+    default: 0.1
+    description: "Values above this threshold are counted as marker-positive for coverage."
+  - name: "--low_quantile"
+    type: double
+    direction: input
+    required: false
+    default: 0.01
+    description: "Lower quantile for robust dynamic-range estimation."
+  - name: "--high_quantile"
+    type: double
+    direction: input
+    required: false
+    default: 0.99
+    description: "Upper quantile for robust dynamic-range estimation."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData file with uns['metric_ids'] and uns['metric_values']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_metrics.py
+  - path: /src/testing/isp_fixtures.py

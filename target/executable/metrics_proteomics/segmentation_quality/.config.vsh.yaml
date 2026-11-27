@@ -1,0 +1,442 @@
+name: "segmentation_quality"
+namespace: "metrics_proteomics"
+version: "build_main"
+argument_groups:
+- name: "Arguments"
+  arguments:
+  - type: "file"
+    name: "--input"
+    description: "Input AnnData with cell-by-protein intensities and, ideally, QC\
+      \ annotations."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--layer"
+    description: "Layer to evaluate. Falls back to X when absent."
+    info: null
+    default:
+    - "counts"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--nuclear_markers"
+    description: "Comma-separated nuclear/DNA marker names. If null, marker names\
+      \ matching DNA, DAPI or Hoechst are auto-detected."
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--exclusive_pairs"
+    description: "Comma-separated mutually exclusive marker pairs, each as A:B (for\
+      \ example ECAD:CD45). Co-expression metrics are NaN when unset, rather than\
+      \ guessed for an unknown panel."
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_neighbors"
+    description: "Neighbours per cell, by centroid distance, used for the spillover\
+      \ metric."
+    info: null
+    default:
+    - 6
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--max_cells"
+    description: "Subsample cells above this count for the neighbour search. Use 0\
+      \ to disable."
+    info: null
+    default:
+    - 20000
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--random_state"
+    description: "Random seed used for subsampling."
+    info: null
+    default:
+    - 0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--output"
+    description: "Output AnnData with uns['metric_ids'] and uns['metric_values']."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "output"
+    multiple: false
+    multiple_sep: ";"
+resources:
+- type: "python_script"
+  path: "script.py"
+  is_executable: true
+label: "Segmentation quality metrics"
+summary: "Reference-free segmentation scores derived from known marker biology"
+description: "Scores segmentation without reference masks, using four properties the\
+  \ data\nmust satisfy if cells were delineated correctly:\n\n- `dapi_positive_ratio`\
+  \ - fraction of objects containing nuclear signal.\n  Every segmented cell should\
+  \ have a nucleus, so a low value means objects are\n  being produced that are not\
+  \ cells. Higher is better.\n- `replicate_correlation` - agreement between nuclear\
+  \ stains repeated across\n  imaging cycles. They image the same physical nuclei,\
+  \ so disagreement is\n  direct evidence of mis-segmentation or mis-registration.\
+  \ Higher is better.\n- `median_replicate_cv` - the same signal seen per cell: spread\
+  \ across the\n  repeated stains within each cell. Lower is better.\n- `mutually_exclusive_coexpression_ratio`\
+  \ - how often cells are co-positive\n  for markers restricted to incompatible lineages,\
+  \ as a fraction of cells\n  positive for either. Merged or bled masks raise it.\
+  \ Lower is better.\n- `spillover_ratio` - intensity in negative cells adjacent to\
+  \ a positive cell\n  against negative cells that are not adjacent. Over-expanded\
+  \ masks raise it\n  above 1. Lower is better.\n\nPositivity is set per marker by\
+  \ Otsu on log1p intensity rather than a fixed\ncutoff, so the metrics survive a\
+  \ change of normalization or intensity scale.\nCo-expression is NaN unless `--exclusive_pairs`\
+  \ is given, since the correct\npairs depend on the panel.\n"
+test_resources:
+- type: "python_script"
+  path: "test_metrics.py"
+  is_executable: true
+- type: "file"
+  path: "isp_fixtures.py"
+info:
+  metrics:
+  - name: "dapi_positive_ratio"
+    label: "Fraction of objects containing nuclear signal"
+    summary: "Fraction of segmented objects positive for the averaged nuclear channels."
+    description: "Fraction of segmented objects positive for the averaged nuclear\
+      \ channels.\n\n    Every segmented cell should contain a nucleus; objects that\
+      \ do not are debris\n    or mask fragments."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "dapi_positive_ratio_qc_pass"
+    label: "Fraction of objects containing nuclear signal"
+    summary: "Fraction of segmented objects positive for the averaged nuclear channels."
+    description: "Fraction of segmented objects positive for the averaged nuclear\
+      \ channels.\n\n    Every segmented cell should contain a nucleus; objects that\
+      \ do not are debris\n    or mask fragments."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "replicate_correlation"
+    label: "Agreement between repeated nuclear stains"
+    summary: "Mean pairwise correlation between nuclear stains repeated across imaging\
+      \ cycles."
+    description: "Mean pairwise correlation between nuclear stains repeated across\
+      \ imaging cycles.\n\n    The same nuclei imaged twice should agree; disagreement\
+      \ means masks are\n    picking up different amounts of each restain."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: -1
+    max: 1
+    maximize: true
+  - name: "replicate_correlation_qc_pass"
+    label: "Agreement between repeated nuclear stains"
+    summary: "Mean pairwise correlation between nuclear stains repeated across imaging\
+      \ cycles."
+    description: "Mean pairwise correlation between nuclear stains repeated across\
+      \ imaging cycles.\n\n    The same nuclei imaged twice should agree; disagreement\
+      \ means masks are\n    picking up different amounts of each restain."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: -1
+    max: 1
+    maximize: true
+  - name: "median_replicate_cv"
+    label: "Per-cell spread across repeated nuclear stains"
+    summary: "Coefficient of variation across the repeated nuclear stains, per cell."
+    description: "Coefficient of variation across the repeated nuclear stains, per\
+      \ cell.\n\n    The per-cell counterpart of :func:`replicate_correlation`: a\
+      \ mask that strays\n    off its nucleus picks up different amounts of each restain."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "median_replicate_cv_qc_pass"
+    label: "Per-cell spread across repeated nuclear stains"
+    summary: "Coefficient of variation across the repeated nuclear stains, per cell."
+    description: "Coefficient of variation across the repeated nuclear stains, per\
+      \ cell.\n\n    The per-cell counterpart of :func:`replicate_correlation`: a\
+      \ mask that strays\n    off its nucleus picks up different amounts of each restain."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "mutually_exclusive_coexpression_ratio"
+    label: "Co-positivity of incompatible lineage markers"
+    summary: "Cells co-positive for incompatible markers, over cells positive for\
+      \ either."
+    description: "Cells co-positive for incompatible markers, over cells positive\
+      \ for either.\n\n    Normalising by the union rather than by all cells stops\
+      \ the value shrinking\n    simply because few cells express either marker. A\
+      \ merged mask spanning an\n    epithelial and an immune cell shows up here."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "mutually_exclusive_coexpression_ratio_qc_pass"
+    label: "Co-positivity of incompatible lineage markers"
+    summary: "Cells co-positive for incompatible markers, over cells positive for\
+      \ either."
+    description: "Cells co-positive for incompatible markers, over cells positive\
+      \ for either.\n\n    Normalising by the union rather than by all cells stops\
+      \ the value shrinking\n    simply because few cells express either marker. A\
+      \ merged mask spanning an\n    epithelial and an immune cell shows up here."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "spillover_ratio"
+    label: "Signal bleed into neighbouring cells"
+    summary: "Intensity of negative cells touching a positive cell, over those that\
+      \ do not."
+    description: "Intensity of negative cells touching a positive cell, over those\
+      \ that do not.\n\n    A marker positive in one cell should be absent from its\
+      \ neighbours. Masks\n    that over-expand across a boundary raise this above\
+      \ 1."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "spillover_ratio_qc_pass"
+    label: "Signal bleed into neighbouring cells"
+    summary: "Intensity of negative cells touching a positive cell, over those that\
+      \ do not."
+    description: "Intensity of negative cells touching a positive cell, over those\
+      \ that do not.\n\n    A marker positive in one cell should be absent from its\
+      \ neighbours. Masks\n    that over-expand across a boundary raise this above\
+      \ 1."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "median_tile_cv"
+    label: "Variation of marker intensity across the slide"
+    summary: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker."
+    description: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker.\n\n    Illumination shading and stitching seams make one region\
+      \ of the slide\n    systematically brighter. Real tissue is spatially structured\
+      \ too, so a high\n    value is suggestive rather than conclusive -- but a *fall*\
+      \ after flat-field\n    correction is evidence the correction worked."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "median_tile_cv_qc_pass"
+    label: "Variation of marker intensity across the slide"
+    summary: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker."
+    description: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker.\n\n    Illumination shading and stitching seams make one region\
+      \ of the slide\n    systematically brighter. Real tissue is spatially structured\
+      \ too, so a high\n    value is suggestive rather than conclusive -- but a *fall*\
+      \ after flat-field\n    correction is evidence the correction worked."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "max_tile_cv"
+    label: "Variation of marker intensity across the slide"
+    summary: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker."
+    description: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker.\n\n    Illumination shading and stitching seams make one region\
+      \ of the slide\n    systematically brighter. Real tissue is spatially structured\
+      \ too, so a high\n    value is suggestive rather than conclusive -- but a *fall*\
+      \ after flat-field\n    correction is evidence the correction worked."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "max_tile_cv_qc_pass"
+    label: "Variation of marker intensity across the slide"
+    summary: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker."
+    description: "Coefficient of variation of a marker's mean across a grid of tiles,\
+      \ per marker.\n\n    Illumination shading and stitching seams make one region\
+      \ of the slide\n    systematically brighter. Real tissue is spatially structured\
+      \ too, so a high\n    value is suggestive rather than conclusive -- but a *fall*\
+      \ after flat-field\n    correction is evidence the correction worked."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  type: "metric"
+  subtype: "proteomics_segmentation_quality"
+  type_info:
+    label: "Proteomics segmentation quality metrics"
+    summary: "Score segmentation without reference masks, using known marker biology"
+    description: "Segmentation is the central benchmarked step, but the dataset-provided\n\
+      reference labels needed to score it directly are often unavailable. These\n\
+      metrics exploit properties the data must satisfy if segmentation is\ncorrect,\
+      \ so they carry a known good direction without any ground truth:\n\n  - every\
+      \ segmented object should contain nuclear signal;\n  - nuclear stains repeated\
+      \ across imaging cycles are the same physical\n    nuclei, so within one correctly\
+      \ delineated cell they must agree;\n  - markers restricted to mutually exclusive\
+      \ lineages should rarely be\n    co-positive in the same cell;\n  - a marker\
+      \ positive in one cell should not appear in its neighbours.\n\nReported over\
+      \ all cells and over the QC-passing subset.\n"
+status: "enabled"
+scope:
+  image: "public"
+  target: "public"
+repositories:
+- type: "github"
+  name: "openproblems"
+  repo: "openproblems-bio/openproblems"
+  tag: "build/main"
+license: "MIT"
+links:
+  repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+  docker_registry: "ghcr.io"
+runners:
+- type: "executable"
+  id: "executable"
+  docker_setup_strategy: "ifneedbepullelsecachedbuild"
+engines:
+- type: "docker"
+  id: "docker"
+  image: "openproblems/base_python:1"
+  namespace_separator: "/"
+  setup:
+  - type: "python"
+    user: false
+    pypi:
+    - "sprotmetrics==0.1.0"
+    - "anndata>=0.10.0"
+    - "zarr<3.0.0"
+    upgrade: true
+  entrypoint: []
+  cmd: null
+- type: "native"
+  id: "native"
+build_info:
+  config: "src/metrics_proteomics/segmentation_quality/config.vsh.yaml"
+  runner: "executable"
+  engine: "docker|native"
+  output: "target/executable/metrics_proteomics/segmentation_quality"
+  executable: "target/executable/metrics_proteomics/segmentation_quality/segmentation_quality"
+  viash_version: "0.9.7"
+  git_commit: "7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+  git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+package_config:
+  name: "task_spatial_proteomics_preprocessing"
+  version: "build_main"
+  label: "Spatial Proteomics Preprocessing"
+  summary: "Benchmarking preprocessing workflows that turn multiplexed protein images\
+    \ into cell-by-protein matrices."
+  description: "Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC\
+    \ - produce\nmultiplexed images in which each channel is an antibody-stained protein\
+    \ marker.\nTurning those images into cell-level protein profiles takes a chain\
+    \ of\npreprocessing choices: correcting the image, segmenting cells, aggregating\n\
+    pixel intensities per cell, applying quality control, and normalizing. Each\n\
+    choice changes the cell-by-protein matrix that every downstream analysis is\n\
+    built on, there is no established consensus on which to make, and the effect\n\
+    of any single one is rarely reported in isolation.\n\nThis task benchmarks those\
+    \ steps as interchangeable modules. The input is a\nSpatialData Zarr store holding\
+    \ a multichannel image and, optionally, reference\nsegmentation labels. The output\
+    \ is a standardized cell-by-protein AnnData\nobject together with preprocessing\
+    \ quality metrics. Methods within a module\nshare an argument contract, so a run\
+    \ can swap one module while holding the\nrest fixed.\n\nThe metrics are deliberately\
+    \ reference-free wherever possible: they score a\nresult against properties the\
+    \ data must satisfy if preprocessing is correct -\nevery segmented object should\
+    \ contain nuclear signal, nuclear stains repeated\nacross imaging cycles are the\
+    \ same physical nuclei and must agree within a\ncell, markers confined to incompatible\
+    \ lineages should rarely be co-positive,\nand expression should not be explained\
+    \ by how large a cell happened to be.\nThis matters because ground-truth segmentation\
+    \ masks are unavailable for most\nreal datasets, including the public exemplar\
+    \ this task is developed against.\n\nThe task stops at preprocessing. Cell-type\
+    \ annotation and biological\ninterpretation are treated as downstream consumers\
+    \ of the output rather than\nas benchmarked steps.\n\nThe metric implementations\
+    \ live in the `sprotmetrics` package\n(https://github.com/theislab/sprotmetrics);\
+    \ the components here are the Viash\ncontracts around them.\n"
+  info:
+    image: "thumbnail.svg"
+  repositories:
+  - type: "github"
+    name: "openproblems"
+    repo: "openproblems-bio/openproblems"
+    tag: "build/main"
+  viash_version: "0.9.7"
+  source: "src"
+  target: "target"
+  config_mods:
+  - ".runners[.type == \"nextflow\"].config.labels := { lowmem : \"memory = 20.Gb\"\
+    , midmem : \"memory = 50.Gb\", highmem : \"memory = 100.Gb\", lowcpu : \"cpus\
+    \ = 5\", midcpu : \"cpus = 15\", highcpu : \"cpus = 30\", lowtime : \"time = 1.h\"\
+    , midtime : \"time = 4.h\", hightime : \"time = 8.h\", veryhightime : \"time =\
+    \ 24.h\" }\n"
+  authors:
+  - name: "Julius Stein"
+    roles:
+    - "author"
+    info:
+      github: "juliusstein77"
+  - name: "Sergio Marco Salas"
+    roles:
+    - "author"
+    - "maintainer"
+    info:
+      github: "sergiomarco25"
+  keywords:
+  - "single-cell"
+  - "openproblems"
+  - "benchmark"
+  - "spatial proteomics"
+  - "multiplexed imaging"
+  - "preprocessing"
+  license: "MIT"
+  organization: "openproblems-bio"
+  references:
+    doi:
+    - "10.1038/s41592-021-01308-y"
+  links:
+    repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+    docker_registry: "ghcr.io"
+    issue_tracker: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues"

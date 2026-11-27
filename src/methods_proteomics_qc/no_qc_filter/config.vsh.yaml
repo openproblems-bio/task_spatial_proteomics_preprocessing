@@ -1,0 +1,31 @@
+__merge__: /src/api/comp_method_proteomics_qc.yaml
+
+name: no_qc_filter
+namespace: methods_proteomics_qc
+
+info:
+  label: "no_qc_filter"
+  summary: "Control QC method that marks all cells as passing QC."
+  description: |
+    Baseline/control method for QC benchmarking. It computes total intensity and preserves morphology metadata,
+    but sets obs['passed_QC'] to True for every segmented object.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - numpy
+          - pandas
+          - scipy
+
+  - type: native
+
+runners:
+  - type: executable

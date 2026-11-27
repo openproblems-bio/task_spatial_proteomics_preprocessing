@@ -7,7 +7,7 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 
 # NOTE: this script works as-is on the template's test resources.
-# When adapting the template to a new task, replace 'task_template' in the
+# When adapting the template to a new task, replace 'task_spatial_proteomics_preprocessing' in the
 # paths below and update the arguments to match your run_benchmark workflow.
 
 set -e
@@ -25,8 +25,8 @@ nextflow run . \
   -resume \
   -c common/nextflow_helpers/labels_ci.config \
   --id cxg_mouse_pancreas_atlas \
-  --input_train resources_test/task_template/cxg_mouse_pancreas_atlas/train.h5ad \
-  --input_test resources_test/task_template/cxg_mouse_pancreas_atlas/test.h5ad \
-  --input_solution resources_test/task_template/cxg_mouse_pancreas_atlas/solution.h5ad \
+  --input_train resources_test/task_spatial_proteomics_preprocessing/cxg_mouse_pancreas_atlas/train.h5ad \
+  --input_test resources_test/task_spatial_proteomics_preprocessing/cxg_mouse_pancreas_atlas/test.h5ad \
+  --input_solution resources_test/task_spatial_proteomics_preprocessing/cxg_mouse_pancreas_atlas/solution.h5ad \
   --output_state state.yaml \
   --publish_dir "$publish_dir"

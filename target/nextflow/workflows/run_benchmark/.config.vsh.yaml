@@ -5,322 +5,494 @@ argument_groups:
 - name: "Inputs"
   arguments:
   - type: "file"
-    name: "--input_train"
-    label: "Training data"
-    summary: "The training data in h5ad format"
-    info:
-      format:
-        type: "h5ad"
-        layers:
-        - type: "integer"
-          name: "counts"
-          description: "Raw counts"
-          required: true
-        - type: "double"
-          name: "normalized"
-          description: "Normalized counts"
-          required: true
-        obs:
-        - type: "string"
-          name: "label"
-          description: "Ground truth cell type labels"
-          required: true
-        - type: "string"
-          name: "batch"
-          description: "Batch information"
-          required: true
-        var:
-        - type: "boolean"
-          name: "hvg"
-          description: "Whether or not the feature is considered to be a 'highly variable\
-            \ gene'"
-          required: true
-        - type: "double"
-          name: "hvg_score"
-          description: "A ranking of the features by hvg."
-          required: true
-        obsm:
-        - type: "double"
-          name: "X_pca"
-          description: "The resulting PCA embedding."
-          required: true
-        uns:
-        - type: "string"
-          name: "dataset_id"
-          description: "A unique identifier for the dataset"
-          required: true
-        - type: "string"
-          name: "normalization_id"
-          description: "Which normalization was used"
-          required: true
-    example:
-    - "resources_test/task_template/cxg_mouse_pancreas_atlas/train.h5ad"
+    name: "--input_zarr"
+    description: "Path to a SpatialData Zarr store. Alias in the raw Nextflow script:\
+      \ --zarr."
+    info: null
     must_exist: true
     create_parent: true
-    required: true
+    required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
   - type: "file"
-    name: "--input_test"
-    label: "Test data"
-    summary: "The subset of molecules used for the test dataset"
-    info:
-      format:
-        type: "h5ad"
-        layers:
-        - type: "integer"
-          name: "counts"
-          description: "Raw counts"
-          required: true
-        - type: "double"
-          name: "normalized"
-          description: "Normalized counts"
-          required: true
-        obs:
-        - type: "string"
-          name: "batch"
-          description: "Batch information"
-          required: true
-        var:
-        - type: "boolean"
-          name: "hvg"
-          description: "Whether or not the feature is considered to be a 'highly variable\
-            \ gene'"
-          required: true
-        - type: "double"
-          name: "hvg_score"
-          description: "A ranking of the features by hvg."
-          required: true
-        obsm:
-        - type: "double"
-          name: "X_pca"
-          description: "The resulting PCA embedding."
-          required: true
-        uns:
-        - type: "string"
-          name: "dataset_id"
-          description: "A unique identifier for the dataset"
-          required: true
-        - type: "string"
-          name: "normalization_id"
-          description: "Which normalization was used"
-          required: true
-    example:
-    - "resources_test/task_template/cxg_mouse_pancreas_atlas/test.h5ad"
+    name: "--zarr"
+    description: "Path to a SpatialData Zarr store. Alias for --input_zarr."
+    info: null
     must_exist: true
     create_parent: true
-    required: true
+    required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
-  - type: "file"
-    name: "--input_solution"
-    label: "Solution"
-    summary: "The solution for the test data"
-    info:
-      format:
-        type: "h5ad"
-        layers:
-        - type: "integer"
-          name: "counts"
-          description: "Raw counts"
-          required: true
-        - type: "double"
-          name: "normalized"
-          description: "Normalized counts"
-          required: true
-        obs:
-        - type: "string"
-          name: "label"
-          description: "Ground truth cell type labels"
-          required: true
-        - type: "string"
-          name: "batch"
-          description: "Batch information"
-          required: true
-        var:
-        - type: "boolean"
-          name: "hvg"
-          description: "Whether or not the feature is considered to be a 'highly variable\
-            \ gene'"
-          required: true
-        - type: "double"
-          name: "hvg_score"
-          description: "A ranking of the features by hvg."
-          required: true
-        obsm:
-        - type: "double"
-          name: "X_pca"
-          description: "The resulting PCA embedding."
-          required: true
-        uns:
-        - type: "string"
-          name: "dataset_id"
-          description: "A unique identifier for the dataset"
-          required: true
-        - name: "dataset_name"
-          type: "string"
-          description: "Nicely formatted name."
-          required: true
-        - type: "string"
-          name: "dataset_url"
-          description: "Link to the original source of the dataset."
-          required: false
-        - name: "dataset_reference"
-          type: "string"
-          description: "Bibtex reference of the paper in which the dataset was published."
-          required: false
-        - name: "dataset_summary"
-          type: "string"
-          description: "Short description of the dataset."
-          required: true
-        - name: "dataset_description"
-          type: "string"
-          description: "Long description of the dataset."
-          required: true
-        - name: "dataset_organism"
-          type: "string"
-          description: "The organism of the sample in the dataset."
-          required: false
-        - type: "string"
-          name: "normalization_id"
-          description: "Which normalization was used"
-          required: true
-    example:
-    - "resources_test/task_template/cxg_mouse_pancreas_atlas/solution.h5ad"
-    must_exist: true
-    create_parent: true
-    required: true
+  - type: "string"
+    name: "--viash_engine"
+    description: "Engine the component executables run under. One of docker or native.\
+      \ Components must have been built with the same engine."
+    info: null
+    default:
+    - "docker"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--image_key"
+    description: "SpatialData image key to use. If null, the first image is used."
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Image correction"
+  arguments:
+  - type: "string"
+    name: "--image_correction_method"
+    description: "Image correction method. One of no_correction, percentile_background,\
+      \ or flatfield."
+    info: null
+    default:
+    - "percentile_background"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--background_percentile"
+    description: "Per-channel percentile used as background estimate."
+    info: null
+    default:
+    - 1.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "boolean"
+    name: "--rescale_max"
+    description: "Whether to rescale every channel to max 1 after correction."
+    info: null
+    default:
+    - false
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--flatfield_sigma"
+    description: "Gaussian sigma in pixels for flat-field illumination estimation."
+    info: null
+    default:
+    - 50.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--flatfield_mode"
+    description: "Flat-field correction mode. One of subtract or divide."
+    info: null
+    default:
+    - "subtract"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Segmentation"
+  arguments:
+  - type: "string"
+    name: "--segmentation_method"
+    description: "Segmentation method. One of threshold, watershed_expand, or reference."
+    info: null
+    default:
+    - "threshold"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--labels_key"
+    description: "SpatialData labels key used by reference segmentation. If null,\
+      \ the first labels element is used."
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--nuclei_channel"
+    description: "Channel index used for nuclear segmentation."
+    info: null
+    default:
+    - 0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--threshold_method"
+    description: "Thresholding strategy used by watershed segmentation. One of quantile\
+      \ or otsu."
+    info: null
+    default:
+    - "quantile"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--threshold_quantile"
+    description: "Quantile threshold for nuclear segmentation."
+    info: null
+    default:
+    - 0.9
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--smoothing_sigma"
+    description: "Gaussian smoothing sigma used by watershed segmentation."
+    info: null
+    default:
+    - 1.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--segmentation_min_area"
+    description: "Minimum segmented object area in pixels."
+    info: null
+    default:
+    - 30
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--hole_area"
+    description: "Maximum hole area filled during watershed preprocessing."
+    info: null
+    default:
+    - 64
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--expansion_distance"
+    description: "Pixel distance used to expand watershed nuclear labels."
+    info: null
+    default:
+    - 5
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Aggregation"
+  arguments:
+  - type: "string"
+    name: "--aggregation_method"
+    description: "Protein aggregation method. One of mean, sum, or median."
+    info: null
+    default:
+    - "mean"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--stat"
+    description: "Legacy aggregation statistic. Dedicated aggregation methods use\
+      \ --aggregation_method."
+    info: null
+    default:
+    - "mean"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Quality control"
+  arguments:
+  - type: "string"
+    name: "--qc_method"
+    description: "QC method. One of no_qc, fixed_threshold, or adaptive_quantile."
+    info: null
+    default:
+    - "fixed_threshold"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--min_area"
+    description: "Minimum cell area for fixed-threshold QC."
+    info: null
+    default:
+    - 50
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--min_total"
+    description: "Minimum total protein intensity for fixed-threshold QC."
+    info: null
+    default:
+    - 0.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--area_quantile"
+    description: "Lower area quantile used by adaptive quantile QC."
+    info: null
+    default:
+    - 0.05
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--total_quantile"
+    description: "Lower total-intensity quantile used by adaptive quantile QC."
+    info: null
+    default:
+    - 0.05
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Normalization"
+  arguments:
+  - type: "string"
+    name: "--normalization_method"
+    description: "Normalization method. One of no_normalization, total_log1p, or arcsinh."
+    info: null
+    default:
+    - "total_log1p"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--scale"
+    description: "Target total intensity for total-log1p normalization."
+    info: null
+    default:
+    - 10000.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--cofactor"
+    description: "Cofactor used for arcsinh normalization."
+    info: null
+    default:
+    - 5.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--transform"
+    description: "Legacy transform argument kept for backward compatibility."
+    info: null
+    default:
+    - "log1p"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+- name: "Metrics"
+  arguments:
+  - type: "double"
+    name: "--cov_thr"
+    description: "Threshold used for marker coverage computation."
+    info: null
+    default:
+    - 0.1
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--metric_marker_layer"
+    description: "Layer evaluated by marker-distribution metrics. If missing, X is\
+      \ used."
+    info: null
+    default:
+    - "counts"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--zero_threshold"
+    description: "Threshold below which marker values are counted as zero or absent."
+    info: null
+    default:
+    - 0.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--metric_low_quantile"
+    description: "Lower quantile for robust marker dynamic-range metrics."
+    info: null
+    default:
+    - 0.01
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--metric_high_quantile"
+    description: "Upper quantile for robust marker dynamic-range metrics."
+    info: null
+    default:
+    - 0.99
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--metric_raw_layer"
+    description: "Raw layer used by normalization diagnostics."
+    info: null
+    default:
+    - "counts"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--metric_normalized_layer"
+    description: "Normalized layer used by normalization diagnostics."
+    info: null
+    default:
+    - "normalized"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--metric_max_cells"
+    description: "Maximum number of cells used by rank-preservation diagnostics. Use\
+      \ 0 to disable subsampling."
+    info: null
+    default:
+    - 5000
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--nuclear_markers"
+    description: "Comma-separated nuclear marker names for the segmentation-quality\
+      \ metrics. If null, names matching DNA, DAPI or Hoechst are auto-detected."
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--exclusive_pairs"
+    description: "Comma-separated mutually exclusive marker pairs as A:B. Co-expression\
+      \ metrics stay NaN when unset."
+    info: null
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--n_neighbors"
+    description: "Neighbours per cell used by the spillover metric."
+    info: null
+    default:
+    - 6
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--metric_covariate"
+    description: "obs column treated as the technical covariate."
+    info: null
+    default:
+    - "area"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--metric_n_pcs"
+    description: "Principal components correlated against the covariate."
+    info: null
+    default:
+    - 10
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--dilation_iterations"
+    description: "Pixels by which masks are grown to sample proximal background."
+    info: null
+    default:
+    - 3
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--norm_percentile"
+    description: "Percentile of per-cell intensity used to normalise the signal integral."
+    info: null
+    default:
+    - 95.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--metric_random_state"
+    description: "Random seed used by metric subsampling."
+    info: null
+    default:
+    - 0
+    required: false
     direction: "input"
     multiple: false
     multiple_sep: ";"
 - name: "Outputs"
   arguments:
   - type: "file"
-    name: "--output_scores"
-    description: "A yaml file containing the scores of each of the methods"
+    name: "--outdir"
+    description: "Output directory. Alias for --publish_dir."
     info: null
     default:
-    - "score_uns.yaml"
+    - "results_isp"
     must_exist: true
     create_parent: true
-    required: true
+    required: false
     direction: "output"
     multiple: false
     multiple_sep: ";"
   - type: "file"
-    name: "--output_method_configs"
+    name: "--publish_dir"
+    description: "Output directory. Alias for --outdir."
     info: null
     default:
-    - "method_configs.yaml"
+    - "results_isp"
     must_exist: true
     create_parent: true
-    required: true
+    required: false
     direction: "output"
     multiple: false
-    multiple_sep: ";"
-  - type: "file"
-    name: "--output_metric_configs"
-    info: null
-    default:
-    - "metric_configs.yaml"
-    must_exist: true
-    create_parent: true
-    required: true
-    direction: "output"
-    multiple: false
-    multiple_sep: ";"
-  - type: "file"
-    name: "--output_dataset_info"
-    info: null
-    default:
-    - "dataset_uns.yaml"
-    must_exist: true
-    create_parent: true
-    required: true
-    direction: "output"
-    multiple: false
-    multiple_sep: ";"
-  - type: "file"
-    name: "--output_task_info"
-    info: null
-    default:
-    - "task_info.yaml"
-    must_exist: true
-    create_parent: true
-    required: true
-    direction: "output"
-    multiple: false
-    multiple_sep: ";"
-- name: "Method filtering"
-  description: "Use these arguments to filter methods by name. By default, all methods\
-    \ are\nrun. If `--methods_include` is defined, only those methods are run. If\n\
-    `--methods_exclude` is defined, all methods except those specified are run.\n\
-    These arguments are mutually exclusive, so only `--methods_include` OR\n`--methods_exclude`\
-    \ can set but not both.\n"
-  arguments:
-  - type: "file"
-    name: "--paramsets"
-    description: "A yaml file mapping method ids to named parameter sets, e.g.:\n\n\
-      \  logistic_regression:\n    strong_regularization:\n      inverse_regularization_strength:\
-      \ 0.1\n    weak_regularization:\n      inverse_regularization_strength: 10.0\n\
-      \nEach listed method is run once per parameter set, with the given arguments\n\
-      and with `paramset_name`/`paramset` attached to its scores.\nIf not provided,\
-      \ the parameter sets default to the `info.variants`\ndefined in the method components'\
-      \ configs. A method without\n`info.variants` is run once with its default parameter\
-      \ set.\n"
-    info: null
-    must_exist: true
-    create_parent: true
-    required: false
-    direction: "input"
-    multiple: false
-    multiple_sep: ";"
-  - type: "string"
-    name: "--methods_include"
-    description: "A list of method ids to include. If specified, only these methods\
-      \ will be run.\nFor parameterised methods, a single paramset can be targeted\
-      \ as `<method_id>.<paramset_name>`, e.g. `logistic_regression.strong_regularization`.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: true
-    multiple_sep: ";"
-  - type: "string"
-    name: "--methods_exclude"
-    description: "A list of method ids to exclude. If specified, all methods except\
-      \ the ones listed will be run.\nFor parameterised methods, a single paramset\
-      \ can be excluded as `<method_id>.<paramset_name>`, e.g. `logistic_regression.strong_regularization`.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: true
-    multiple_sep: ";"
-- name: "Metric filtering"
-  description: "Use these arguments to filter metrics by name. By default, all metrics\
-    \ are\nrun. If `--metrics_include` is defined, only those metrics are run. If\n\
-    `--metrics_exclude` is defined, all metrics except those specified are run.\n\
-    These arguments are mutually exclusive, so only `--metrics_include` OR\n`--metrics_exclude`\
-    \ can set but not both.\n"
-  arguments:
-  - type: "string"
-    name: "--metrics_include"
-    description: "A list of metric ids to include. If specified, only these metrics\
-      \ will be run.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: true
-    multiple_sep: ";"
-  - type: "string"
-    name: "--metrics_exclude"
-    description: "A list of metric ids to exclude. If specified, all metrics except\
-      \ the ones listed will be run.\n"
-    info: null
-    required: false
-    direction: "input"
-    multiple: true
     multiple_sep: ";"
 resources:
 - type: "nextflow_script"
@@ -331,27 +503,79 @@ resources:
   path: "_viash.yaml"
 - type: "file"
   path: "helper.nf"
-info: null
+info:
+  label: "Spatial proteomics preprocessing benchmark"
+  summary: "End-to-end benchmark workflow for spatial proteomics preprocessing"
+  description: "Reproducible ISP preprocessing workflow:\nSpatialData zarr -> image\
+    \ correction -> segmentation -> protein aggregation -> QC -> normalization ->\
+    \ metrics.\nThe workflow supports benchmarkable alternatives for image correction,\
+    \ segmentation, aggregation, and quality control.\n"
 status: "enabled"
 scope:
   image: "public"
   target: "public"
 dependencies:
-- name: "utils/extract_uns_metadata"
-  repository:
-    type: "github"
-    repo: "openproblems-bio/openproblems"
-    tag: "build/main"
-- name: "control_methods/true_labels"
+- name: "methods_image_correction/no_image_correction"
   repository:
     type: "local"
-- name: "control_methods/random_labels"
+- name: "methods_image_correction/basic_image_correction"
   repository:
     type: "local"
-- name: "methods/logistic_regression"
+- name: "methods_image_correction/flatfield_image_correction"
   repository:
     type: "local"
-- name: "metrics/accuracy"
+- name: "methods_proteomics_segmentation/basic_threshold_segmentation"
+  repository:
+    type: "local"
+- name: "methods_proteomics_segmentation/watershed_expand_segmentation"
+  repository:
+    type: "local"
+- name: "methods_proteomics_segmentation/reference_segmentation"
+  repository:
+    type: "local"
+- name: "methods_protein_aggregation/mean_intensity_aggregation"
+  repository:
+    type: "local"
+- name: "methods_protein_aggregation/sum_intensity_aggregation"
+  repository:
+    type: "local"
+- name: "methods_protein_aggregation/median_intensity_aggregation"
+  repository:
+    type: "local"
+- name: "methods_proteomics_qc/no_qc_filter"
+  repository:
+    type: "local"
+- name: "methods_proteomics_qc/basic_qc_filter"
+  repository:
+    type: "local"
+- name: "methods_proteomics_qc/adaptive_quantile_qc_filter"
+  repository:
+    type: "local"
+- name: "methods_proteomics_normalization/no_normalization"
+  repository:
+    type: "local"
+- name: "methods_proteomics_normalization/total_log1p_normalization"
+  repository:
+    type: "local"
+- name: "methods_proteomics_normalization/arcsinh_normalization"
+  repository:
+    type: "local"
+- name: "metrics_proteomics/basic"
+  repository:
+    type: "local"
+- name: "metrics_proteomics/marker_distribution"
+  repository:
+    type: "local"
+- name: "metrics_proteomics/normalization_diagnostics"
+  repository:
+    type: "local"
+- name: "metrics_proteomics/segmentation_quality"
+  repository:
+    type: "local"
+- name: "metrics_proteomics/technical_covariates"
+  repository:
+    type: "local"
+- name: "metrics_proteomics/signal_background"
   repository:
     type: "local"
 repositories:
@@ -361,7 +585,7 @@ repositories:
   tag: "build/main"
 license: "MIT"
 links:
-  repository: "https://github.com/openproblems-bio/task_template"
+  repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
   docker_registry: "ghcr.io"
 runners:
 - type: "nextflow"
@@ -394,38 +618,63 @@ build_info:
   output: "target/nextflow/workflows/run_benchmark"
   executable: "target/nextflow/workflows/run_benchmark/main.nf"
   viash_version: "0.9.7"
-  git_commit: "ba236b5eb55a35703b3f5fb92a51d85de24e0c45"
+  git_commit: "7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
   git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
   dependencies:
-  - "target/dependencies/github/openproblems-bio/openproblems/build/main/nextflow/utils/extract_uns_metadata"
-  - "target/nextflow/control_methods/true_labels"
-  - "target/nextflow/control_methods/random_labels"
-  - "target/nextflow/methods/logistic_regression"
-  - "target/nextflow/metrics/accuracy"
+  - "target/nextflow/methods_image_correction/no_image_correction"
+  - "target/nextflow/methods_image_correction/basic_image_correction"
+  - "target/nextflow/methods_image_correction/flatfield_image_correction"
+  - "target/nextflow/methods_proteomics_segmentation/basic_threshold_segmentation"
+  - "target/nextflow/methods_proteomics_segmentation/watershed_expand_segmentation"
+  - "target/nextflow/methods_proteomics_segmentation/reference_segmentation"
+  - "target/nextflow/methods_protein_aggregation/mean_intensity_aggregation"
+  - "target/nextflow/methods_protein_aggregation/sum_intensity_aggregation"
+  - "target/nextflow/methods_protein_aggregation/median_intensity_aggregation"
+  - "target/nextflow/methods_proteomics_qc/no_qc_filter"
+  - "target/nextflow/methods_proteomics_qc/basic_qc_filter"
+  - "target/nextflow/methods_proteomics_qc/adaptive_quantile_qc_filter"
+  - "target/nextflow/methods_proteomics_normalization/no_normalization"
+  - "target/nextflow/methods_proteomics_normalization/total_log1p_normalization"
+  - "target/nextflow/methods_proteomics_normalization/arcsinh_normalization"
+  - "target/nextflow/metrics_proteomics/basic"
+  - "target/nextflow/metrics_proteomics/marker_distribution"
+  - "target/nextflow/metrics_proteomics/normalization_diagnostics"
+  - "target/nextflow/metrics_proteomics/segmentation_quality"
+  - "target/nextflow/metrics_proteomics/technical_covariates"
+  - "target/nextflow/metrics_proteomics/signal_background"
 package_config:
-  name: "task_template"
+  name: "task_spatial_proteomics_preprocessing"
   version: "build_main"
-  label: "Template"
-  summary: "A one sentence summary of purpose and methodology. Used for creating an\
-    \ overview tables."
-  description: "Provide a clear and concise description of your task, detailing the\
-    \ specific problem it aims\nto solve. Outline the input data types, the expected\
-    \ output, and any assumptions or constraints.\nBe sure to explain any terminology\
-    \ or concepts that are essential for understanding the task.\n\nExplain the motivation\
-    \ behind your proposed task. Describe the biological or computational \nproblem\
-    \ you aim to address and why it's important. Discuss the current state of research\
-    \ in\nthis area and any gaps or challenges that your task could help address.\
-    \ This section \nshould convince readers of the significance and relevance of\
-    \ your task.\n"
+  label: "Spatial Proteomics Preprocessing"
+  summary: "Benchmarking preprocessing workflows that turn multiplexed protein images\
+    \ into cell-by-protein matrices."
+  description: "Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC\
+    \ - produce\nmultiplexed images in which each channel is an antibody-stained protein\
+    \ marker.\nTurning those images into cell-level protein profiles takes a chain\
+    \ of\npreprocessing choices: correcting the image, segmenting cells, aggregating\n\
+    pixel intensities per cell, applying quality control, and normalizing. Each\n\
+    choice changes the cell-by-protein matrix that every downstream analysis is\n\
+    built on, there is no established consensus on which to make, and the effect\n\
+    of any single one is rarely reported in isolation.\n\nThis task benchmarks those\
+    \ steps as interchangeable modules. The input is a\nSpatialData Zarr store holding\
+    \ a multichannel image and, optionally, reference\nsegmentation labels. The output\
+    \ is a standardized cell-by-protein AnnData\nobject together with preprocessing\
+    \ quality metrics. Methods within a module\nshare an argument contract, so a run\
+    \ can swap one module while holding the\nrest fixed.\n\nThe metrics are deliberately\
+    \ reference-free wherever possible: they score a\nresult against properties the\
+    \ data must satisfy if preprocessing is correct -\nevery segmented object should\
+    \ contain nuclear signal, nuclear stains repeated\nacross imaging cycles are the\
+    \ same physical nuclei and must agree within a\ncell, markers confined to incompatible\
+    \ lineages should rarely be co-positive,\nand expression should not be explained\
+    \ by how large a cell happened to be.\nThis matters because ground-truth segmentation\
+    \ masks are unavailable for most\nreal datasets, including the public exemplar\
+    \ this task is developed against.\n\nThe task stops at preprocessing. Cell-type\
+    \ annotation and biological\ninterpretation are treated as downstream consumers\
+    \ of the output rather than\nas benchmarked steps.\n\nThe metric implementations\
+    \ live in the `sprotmetrics` package\n(https://github.com/theislab/sprotmetrics);\
+    \ the components here are the Viash\ncontracts around them.\n"
   info:
     image: "thumbnail.svg"
-    test_resources:
-    - type: "s3"
-      path: "s3://openproblems-data/resources_test/common/cxg_mouse_pancreas_atlas/"
-      dest: "resources_test/common/cxg_mouse_pancreas_atlas"
-    - type: "s3"
-      path: "s3://openproblems-data/resources_test/task_template/"
-      dest: "resources_test/task_template"
   repositories:
   - type: "github"
     name: "openproblems"
@@ -441,26 +690,30 @@ package_config:
     , midtime : \"time = 4.h\", hightime : \"time = 8.h\", veryhightime : \"time =\
     \ 24.h\" }\n"
   authors:
-  - name: "John Doe"
+  - name: "Julius Stein"
+    roles:
+    - "author"
+    info:
+      github: "juliusstein77"
+  - name: "Sergio Marco Salas"
     roles:
     - "author"
     - "maintainer"
     info:
-      github: "johndoe"
-      orcid: "0000-0000-0000-0000"
-      email: "john@doe.me"
-      twitter: "johndoe"
-      linkedin: "johndoe"
+      github: "sergiomarco25"
   keywords:
   - "single-cell"
   - "openproblems"
   - "benchmark"
+  - "spatial proteomics"
+  - "multiplexed imaging"
+  - "preprocessing"
   license: "MIT"
   organization: "openproblems-bio"
   references:
     doi:
-    - "10.21203/rs.3.rs-4181617/v1"
+    - "10.1038/s41592-021-01308-y"
   links:
-    repository: "https://github.com/openproblems-bio/task_template"
+    repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
     docker_registry: "ghcr.io"
-    issue_tracker: "https://github.com/openproblems-bio/task_template/issues"
+    issue_tracker: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues"

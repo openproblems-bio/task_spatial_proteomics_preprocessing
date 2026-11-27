@@ -1,0 +1,48 @@
+namespace: methods_image_correction
+info:
+  type: method
+  subtype: image_correction
+  type_info:
+    label: Image correction
+    summary: Correct raw multiplexed protein images
+    description: |
+      Performs minimal image correction on a multichannel image extracted from a SpatialData zarr.
+arguments:
+  - name: --input_zarr
+    type: file
+    direction: input
+    required: true
+    description: Input SpatialData zarr.
+  - name: --image_key
+    type: string
+    direction: input
+    required: false
+    default: null
+    description: Image element key. If null, the first image is used.
+  - name: --background_percentile
+    type: double
+    direction: input
+    required: false
+    default: 1.0
+    description: Percentile used as per-channel background estimate.
+  - name: --rescale_max
+    type: boolean
+    direction: input
+    required: false
+    default: false
+    description: Whether to rescale every channel to max 1 after correction.
+  - name: --output_image
+    type: file
+    direction: output
+    required: true
+    description: Corrected image as numpy array in channel-y-x format.
+  - name: --output_markers
+    type: file
+    direction: output
+    required: true
+    description: JSON file containing marker names.
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_image_correction.py
+  - path: /src/testing/isp_fixtures.py

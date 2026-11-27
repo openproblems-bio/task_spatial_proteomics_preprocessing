@@ -1,0 +1,164 @@
+__merge__: /src/api/comp_metric_proteomics_marker_distribution.yaml
+name: marker_distribution
+label: Marker distribution metrics
+summary: Compute marker-level intensity, sparsity, coverage, and dynamic-range metrics
+description: 'Computes marker-level distribution diagnostics that are useful for comparing
+
+  image correction, segmentation, aggregation, QC, and normalization choices.
+
+  '
+resources:
+- type: python_script
+  path: script.py
+engines:
+- type: docker
+  image: openproblems/base_python:1
+  setup:
+  - type: python
+    pypi:
+    - sprotmetrics==0.1.0
+    - anndata>=0.10.0
+    - zarr<3.0.0
+- type: native
+runners:
+- type: executable
+info:
+  metrics:
+  - name: median_marker_zero_fraction
+    label: Per-marker fraction at or below zero
+    summary: Fraction of cells at or below `threshold`, per marker.
+    description: Fraction of cells at or below `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: median_marker_zero_fraction_qc_pass
+    label: Per-marker fraction at or below zero
+    summary: Fraction of cells at or below `threshold`, per marker.
+    description: Fraction of cells at or below `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_marker_zero_fraction
+    label: Per-marker fraction at or below zero
+    summary: Fraction of cells at or below `threshold`, per marker.
+    description: Fraction of cells at or below `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: mean_marker_zero_fraction_qc_pass
+    label: Per-marker fraction at or below zero
+    summary: Fraction of cells at or below `threshold`, per marker.
+    description: Fraction of cells at or below `threshold`, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: 1
+    maximize: false
+  - name: median_marker_dynamic_range
+    label: Per-marker dynamic range
+    summary: High minus low quantile of intensity, per marker.
+    description: High minus low quantile of intensity, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: true
+  - name: median_marker_dynamic_range_qc_pass
+    label: Per-marker dynamic range
+    summary: High minus low quantile of intensity, per marker.
+    description: High minus low quantile of intensity, per marker.
+    references: {}
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: true
+  - name: median_marker_bimodality
+    label: Marker positive-population separability
+    summary: Separability of the two populations an Otsu split produces, per marker.
+    description: "Separability of the two populations an Otsu split produces, per marker.\n\n    ``otsu_variance_ratio``\
+      \ is between-class over within-class variance.\n    ``bimodality_index`` is Wang et al. (2009),\
+      \ ``sqrt(p(1-p)) * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly BI > 1.1).\n\n    This\
+      \ is what image correction and normalization are *for*, and nothing in the\n    benchmark measured\
+      \ it."
+    references:
+      doi:
+      - 10.4137/CIN.S2846
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: true
+  - name: median_marker_bimodality_qc_pass
+    label: Marker positive-population separability
+    summary: Separability of the two populations an Otsu split produces, per marker.
+    description: "Separability of the two populations an Otsu split produces, per marker.\n\n    ``otsu_variance_ratio``\
+      \ is between-class over within-class variance.\n    ``bimodality_index`` is Wang et al. (2009),\
+      \ ``sqrt(p(1-p)) * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly BI > 1.1).\n\n    This\
+      \ is what image correction and normalization are *for*, and nothing in the\n    benchmark measured\
+      \ it."
+    references:
+      doi:
+      - 10.4137/CIN.S2846
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: true
+  - name: min_marker_bimodality
+    label: Marker positive-population separability
+    summary: Separability of the two populations an Otsu split produces, per marker.
+    description: "Separability of the two populations an Otsu split produces, per marker.\n\n    ``otsu_variance_ratio``\
+      \ is between-class over within-class variance.\n    ``bimodality_index`` is Wang et al. (2009),\
+      \ ``sqrt(p(1-p)) * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly BI > 1.1).\n\n    This\
+      \ is what image correction and normalization are *for*, and nothing in the\n    benchmark measured\
+      \ it."
+    references:
+      doi:
+      - 10.4137/CIN.S2846
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: true
+  - name: min_marker_bimodality_qc_pass
+    label: Marker positive-population separability
+    summary: Separability of the two populations an Otsu split produces, per marker.
+    description: "Separability of the two populations an Otsu split produces, per marker.\n\n    ``otsu_variance_ratio``\
+      \ is between-class over within-class variance.\n    ``bimodality_index`` is Wang et al. (2009),\
+      \ ``sqrt(p(1-p)) * |m1-m2| / sigma``,\n    with both components taken from the Otsu split rather\
+      \ than an EM fit; it is\n    the version with a conventional cutoff (roughly BI > 1.1).\n\n    This\
+      \ is what image correction and normalization are *for*, and nothing in the\n    benchmark measured\
+      \ it."
+    references:
+      doi:
+      - 10.4137/CIN.S2846
+    links:
+      repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
+      docs: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme
+    min: 0
+    max: '+.inf'
+    maximize: true

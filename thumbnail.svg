@@ -1,6 +1,58 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="450" height="150" viewBox="0 0 450 150">
-  <rect width="450" height="150" fill="#f5f7fa"/>
-  <rect x="10.5" y="10.5" width="429" height="129" rx="8" fill="none" stroke="#94a3b8" stroke-dasharray="6 4"/>
-  <text x="225" y="70" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#475569">task thumbnail placeholder</text>
-  <text x="225" y="95" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#94a3b8">replace with an svg renderable to 450x150 px</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="450" height="150" viewBox="0 0 450 150" role="img" aria-label="Spatial proteomics preprocessing: a multiplexed image is corrected, segmented, and aggregated into a cell-by-protein matrix">
+  <rect width="450" height="150" fill="#ffffff"/>
+
+  <!-- 1. multiplexed image: three stacked marker channels -->
+  <g transform="translate(22 38)">
+    <rect x="16" y="0"  width="74" height="56" rx="3" fill="#dbeafe" stroke="#60a5fa"/>
+    <rect x="8"  y="8"  width="74" height="56" rx="3" fill="#dcfce7" stroke="#4ade80"/>
+    <rect x="0"  y="16" width="74" height="56" rx="3" fill="#fee2e2" stroke="#f87171"/>
+    <g fill="#b91c1c" opacity="0.85">
+      <circle cx="17" cy="35" r="5"/><circle cx="37" cy="27" r="6"/>
+      <circle cx="55" cy="42" r="5"/><circle cx="28" cy="56" r="4"/><circle cx="52" cy="62" r="4"/>
+    </g>
+  </g>
+
+  <!-- 2. segmentation: the same objects as outlined masks -->
+  <g transform="translate(150 54)">
+    <rect x="0" y="0" width="74" height="56" rx="3" fill="#f8fafc" stroke="#94a3b8"/>
+    <g fill="none" stroke="#334155" stroke-width="1.6">
+      <circle cx="17" cy="19" r="7"/><circle cx="37" cy="11" r="8"/>
+      <circle cx="55" cy="26" r="7"/><circle cx="28" cy="40" r="6"/><circle cx="52" cy="46" r="6"/>
+    </g>
+  </g>
+
+  <!-- 3. cell-by-protein matrix -->
+  <g transform="translate(278 54)">
+    <rect x="0" y="0" width="74" height="56" rx="3" fill="#ffffff" stroke="#94a3b8"/>
+    <g>
+      <rect x="4"  y="5"  width="13" height="9" fill="#1e40af"/><rect x="21" y="5"  width="13" height="9" fill="#93c5fd"/>
+      <rect x="38" y="5"  width="13" height="9" fill="#3b82f6"/><rect x="55" y="5"  width="14" height="9" fill="#dbeafe"/>
+      <rect x="4"  y="17" width="13" height="9" fill="#93c5fd"/><rect x="21" y="17" width="13" height="9" fill="#1e40af"/>
+      <rect x="38" y="17" width="13" height="9" fill="#dbeafe"/><rect x="55" y="17" width="14" height="9" fill="#60a5fa"/>
+      <rect x="4"  y="29" width="13" height="9" fill="#3b82f6"/><rect x="21" y="29" width="13" height="9" fill="#dbeafe"/>
+      <rect x="38" y="29" width="13" height="9" fill="#1e40af"/><rect x="55" y="29" width="14" height="9" fill="#93c5fd"/>
+      <rect x="4"  y="41" width="13" height="9" fill="#dbeafe"/><rect x="21" y="41" width="13" height="9" fill="#60a5fa"/>
+      <rect x="38" y="41" width="13" height="9" fill="#93c5fd"/><rect x="55" y="41" width="14" height="9" fill="#1e40af"/>
+    </g>
+  </g>
+
+  <!-- arrows -->
+  <g stroke="#64748b" stroke-width="1.8" fill="none" marker-end="url(#a)">
+    <path d="M104 82 H142"/>
+    <path d="M232 82 H270"/>
+  </g>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <!-- stage labels -->
+  <g font-family="sans-serif" font-size="10" fill="#475569" text-anchor="middle">
+    <text x="59"  y="128">multiplexed image</text>
+    <text x="187" y="128">segmentation</text>
+    <text x="315" y="128">cell × protein</text>
+  </g>
+  <text x="225" y="24" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="600" fill="#0f172a">Spatial Proteomics Preprocessing</text>
+  <text x="400" y="128" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#94a3b8">+ metrics</text>
 </svg>

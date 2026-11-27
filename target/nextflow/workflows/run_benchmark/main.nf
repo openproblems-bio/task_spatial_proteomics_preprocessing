@@ -3049,282 +3049,556 @@ meta = [
       "arguments" : [
         {
           "type" : "file",
-          "name" : "--input_train",
-          "label" : "Training data",
-          "summary" : "The training data in h5ad format",
-          "info" : {
-            "format" : {
-              "type" : "h5ad",
-              "layers" : [
-                {
-                  "type" : "integer",
-                  "name" : "counts",
-                  "description" : "Raw counts",
-                  "required" : true
-                },
-                {
-                  "type" : "double",
-                  "name" : "normalized",
-                  "description" : "Normalized counts",
-                  "required" : true
-                }
-              ],
-              "obs" : [
-                {
-                  "type" : "string",
-                  "name" : "label",
-                  "description" : "Ground truth cell type labels",
-                  "required" : true
-                },
-                {
-                  "type" : "string",
-                  "name" : "batch",
-                  "description" : "Batch information",
-                  "required" : true
-                }
-              ],
-              "var" : [
-                {
-                  "type" : "boolean",
-                  "name" : "hvg",
-                  "description" : "Whether or not the feature is considered to be a 'highly variable gene'",
-                  "required" : true
-                },
-                {
-                  "type" : "double",
-                  "name" : "hvg_score",
-                  "description" : "A ranking of the features by hvg.",
-                  "required" : true
-                }
-              ],
-              "obsm" : [
-                {
-                  "type" : "double",
-                  "name" : "X_pca",
-                  "description" : "The resulting PCA embedding.",
-                  "required" : true
-                }
-              ],
-              "uns" : [
-                {
-                  "type" : "string",
-                  "name" : "dataset_id",
-                  "description" : "A unique identifier for the dataset",
-                  "required" : true
-                },
-                {
-                  "type" : "string",
-                  "name" : "normalization_id",
-                  "description" : "Which normalization was used",
-                  "required" : true
-                }
-              ]
-            }
-          },
-          "example" : [
-            "resources_test/task_template/cxg_mouse_pancreas_atlas/train.h5ad"
-          ],
+          "name" : "--input_zarr",
+          "description" : "Path to a SpatialData Zarr store. Alias in the raw Nextflow script: --zarr.",
           "must_exist" : true,
           "create_parent" : true,
-          "required" : true,
+          "required" : false,
           "direction" : "input",
           "multiple" : false,
           "multiple_sep" : ";"
         },
         {
           "type" : "file",
-          "name" : "--input_test",
-          "label" : "Test data",
-          "summary" : "The subset of molecules used for the test dataset",
-          "info" : {
-            "format" : {
-              "type" : "h5ad",
-              "layers" : [
-                {
-                  "type" : "integer",
-                  "name" : "counts",
-                  "description" : "Raw counts",
-                  "required" : true
-                },
-                {
-                  "type" : "double",
-                  "name" : "normalized",
-                  "description" : "Normalized counts",
-                  "required" : true
-                }
-              ],
-              "obs" : [
-                {
-                  "type" : "string",
-                  "name" : "batch",
-                  "description" : "Batch information",
-                  "required" : true
-                }
-              ],
-              "var" : [
-                {
-                  "type" : "boolean",
-                  "name" : "hvg",
-                  "description" : "Whether or not the feature is considered to be a 'highly variable gene'",
-                  "required" : true
-                },
-                {
-                  "type" : "double",
-                  "name" : "hvg_score",
-                  "description" : "A ranking of the features by hvg.",
-                  "required" : true
-                }
-              ],
-              "obsm" : [
-                {
-                  "type" : "double",
-                  "name" : "X_pca",
-                  "description" : "The resulting PCA embedding.",
-                  "required" : true
-                }
-              ],
-              "uns" : [
-                {
-                  "type" : "string",
-                  "name" : "dataset_id",
-                  "description" : "A unique identifier for the dataset",
-                  "required" : true
-                },
-                {
-                  "type" : "string",
-                  "name" : "normalization_id",
-                  "description" : "Which normalization was used",
-                  "required" : true
-                }
-              ]
-            }
-          },
-          "example" : [
-            "resources_test/task_template/cxg_mouse_pancreas_atlas/test.h5ad"
-          ],
+          "name" : "--zarr",
+          "description" : "Path to a SpatialData Zarr store. Alias for --input_zarr.",
           "must_exist" : true,
           "create_parent" : true,
-          "required" : true,
+          "required" : false,
           "direction" : "input",
           "multiple" : false,
           "multiple_sep" : ";"
         },
         {
-          "type" : "file",
-          "name" : "--input_solution",
-          "label" : "Solution",
-          "summary" : "The solution for the test data",
-          "info" : {
-            "format" : {
-              "type" : "h5ad",
-              "layers" : [
-                {
-                  "type" : "integer",
-                  "name" : "counts",
-                  "description" : "Raw counts",
-                  "required" : true
-                },
-                {
-                  "type" : "double",
-                  "name" : "normalized",
-                  "description" : "Normalized counts",
-                  "required" : true
-                }
-              ],
-              "obs" : [
-                {
-                  "type" : "string",
-                  "name" : "label",
-                  "description" : "Ground truth cell type labels",
-                  "required" : true
-                },
-                {
-                  "type" : "string",
-                  "name" : "batch",
-                  "description" : "Batch information",
-                  "required" : true
-                }
-              ],
-              "var" : [
-                {
-                  "type" : "boolean",
-                  "name" : "hvg",
-                  "description" : "Whether or not the feature is considered to be a 'highly variable gene'",
-                  "required" : true
-                },
-                {
-                  "type" : "double",
-                  "name" : "hvg_score",
-                  "description" : "A ranking of the features by hvg.",
-                  "required" : true
-                }
-              ],
-              "obsm" : [
-                {
-                  "type" : "double",
-                  "name" : "X_pca",
-                  "description" : "The resulting PCA embedding.",
-                  "required" : true
-                }
-              ],
-              "uns" : [
-                {
-                  "type" : "string",
-                  "name" : "dataset_id",
-                  "description" : "A unique identifier for the dataset",
-                  "required" : true
-                },
-                {
-                  "name" : "dataset_name",
-                  "type" : "string",
-                  "description" : "Nicely formatted name.",
-                  "required" : true
-                },
-                {
-                  "type" : "string",
-                  "name" : "dataset_url",
-                  "description" : "Link to the original source of the dataset.",
-                  "required" : false
-                },
-                {
-                  "name" : "dataset_reference",
-                  "type" : "string",
-                  "description" : "Bibtex reference of the paper in which the dataset was published.",
-                  "required" : false
-                },
-                {
-                  "name" : "dataset_summary",
-                  "type" : "string",
-                  "description" : "Short description of the dataset.",
-                  "required" : true
-                },
-                {
-                  "name" : "dataset_description",
-                  "type" : "string",
-                  "description" : "Long description of the dataset.",
-                  "required" : true
-                },
-                {
-                  "name" : "dataset_organism",
-                  "type" : "string",
-                  "description" : "The organism of the sample in the dataset.",
-                  "required" : false
-                },
-                {
-                  "type" : "string",
-                  "name" : "normalization_id",
-                  "description" : "Which normalization was used",
-                  "required" : true
-                }
-              ]
-            }
-          },
-          "example" : [
-            "resources_test/task_template/cxg_mouse_pancreas_atlas/solution.h5ad"
+          "type" : "string",
+          "name" : "--viash_engine",
+          "description" : "Engine the component executables run under. One of docker or native. Components must have been built with the same engine.",
+          "default" : [
+            "docker"
           ],
-          "must_exist" : true,
-          "create_parent" : true,
-          "required" : true,
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--image_key",
+          "description" : "SpatialData image key to use. If null, the first image is used.",
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        }
+      ]
+    },
+    {
+      "name" : "Image correction",
+      "arguments" : [
+        {
+          "type" : "string",
+          "name" : "--image_correction_method",
+          "description" : "Image correction method. One of no_correction, percentile_background, or flatfield.",
+          "default" : [
+            "percentile_background"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--background_percentile",
+          "description" : "Per-channel percentile used as background estimate.",
+          "default" : [
+            1.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "boolean",
+          "name" : "--rescale_max",
+          "description" : "Whether to rescale every channel to max 1 after correction.",
+          "default" : [
+            false
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--flatfield_sigma",
+          "description" : "Gaussian sigma in pixels for flat-field illumination estimation.",
+          "default" : [
+            50.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--flatfield_mode",
+          "description" : "Flat-field correction mode. One of subtract or divide.",
+          "default" : [
+            "subtract"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        }
+      ]
+    },
+    {
+      "name" : "Segmentation",
+      "arguments" : [
+        {
+          "type" : "string",
+          "name" : "--segmentation_method",
+          "description" : "Segmentation method. One of threshold, watershed_expand, or reference.",
+          "default" : [
+            "threshold"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--labels_key",
+          "description" : "SpatialData labels key used by reference segmentation. If null, the first labels element is used.",
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--nuclei_channel",
+          "description" : "Channel index used for nuclear segmentation.",
+          "default" : [
+            0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--threshold_method",
+          "description" : "Thresholding strategy used by watershed segmentation. One of quantile or otsu.",
+          "default" : [
+            "quantile"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--threshold_quantile",
+          "description" : "Quantile threshold for nuclear segmentation.",
+          "default" : [
+            0.9
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--smoothing_sigma",
+          "description" : "Gaussian smoothing sigma used by watershed segmentation.",
+          "default" : [
+            1.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--segmentation_min_area",
+          "description" : "Minimum segmented object area in pixels.",
+          "default" : [
+            30
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--hole_area",
+          "description" : "Maximum hole area filled during watershed preprocessing.",
+          "default" : [
+            64
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--expansion_distance",
+          "description" : "Pixel distance used to expand watershed nuclear labels.",
+          "default" : [
+            5
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        }
+      ]
+    },
+    {
+      "name" : "Aggregation",
+      "arguments" : [
+        {
+          "type" : "string",
+          "name" : "--aggregation_method",
+          "description" : "Protein aggregation method. One of mean, sum, or median.",
+          "default" : [
+            "mean"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--stat",
+          "description" : "Legacy aggregation statistic. Dedicated aggregation methods use --aggregation_method.",
+          "default" : [
+            "mean"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        }
+      ]
+    },
+    {
+      "name" : "Quality control",
+      "arguments" : [
+        {
+          "type" : "string",
+          "name" : "--qc_method",
+          "description" : "QC method. One of no_qc, fixed_threshold, or adaptive_quantile.",
+          "default" : [
+            "fixed_threshold"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--min_area",
+          "description" : "Minimum cell area for fixed-threshold QC.",
+          "default" : [
+            50
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--min_total",
+          "description" : "Minimum total protein intensity for fixed-threshold QC.",
+          "default" : [
+            0.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--area_quantile",
+          "description" : "Lower area quantile used by adaptive quantile QC.",
+          "default" : [
+            0.05
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--total_quantile",
+          "description" : "Lower total-intensity quantile used by adaptive quantile QC.",
+          "default" : [
+            0.05
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        }
+      ]
+    },
+    {
+      "name" : "Normalization",
+      "arguments" : [
+        {
+          "type" : "string",
+          "name" : "--normalization_method",
+          "description" : "Normalization method. One of no_normalization, total_log1p, or arcsinh.",
+          "default" : [
+            "total_log1p"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--scale",
+          "description" : "Target total intensity for total-log1p normalization.",
+          "default" : [
+            10000.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--cofactor",
+          "description" : "Cofactor used for arcsinh normalization.",
+          "default" : [
+            5.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--transform",
+          "description" : "Legacy transform argument kept for backward compatibility.",
+          "default" : [
+            "log1p"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        }
+      ]
+    },
+    {
+      "name" : "Metrics",
+      "arguments" : [
+        {
+          "type" : "double",
+          "name" : "--cov_thr",
+          "description" : "Threshold used for marker coverage computation.",
+          "default" : [
+            0.1
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--metric_marker_layer",
+          "description" : "Layer evaluated by marker-distribution metrics. If missing, X is used.",
+          "default" : [
+            "counts"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--zero_threshold",
+          "description" : "Threshold below which marker values are counted as zero or absent.",
+          "default" : [
+            0.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--metric_low_quantile",
+          "description" : "Lower quantile for robust marker dynamic-range metrics.",
+          "default" : [
+            0.01
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--metric_high_quantile",
+          "description" : "Upper quantile for robust marker dynamic-range metrics.",
+          "default" : [
+            0.99
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--metric_raw_layer",
+          "description" : "Raw layer used by normalization diagnostics.",
+          "default" : [
+            "counts"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--metric_normalized_layer",
+          "description" : "Normalized layer used by normalization diagnostics.",
+          "default" : [
+            "normalized"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--metric_max_cells",
+          "description" : "Maximum number of cells used by rank-preservation diagnostics. Use 0 to disable subsampling.",
+          "default" : [
+            5000
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--nuclear_markers",
+          "description" : "Comma-separated nuclear marker names for the segmentation-quality metrics. If null, names matching DNA, DAPI or Hoechst are auto-detected.",
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--exclusive_pairs",
+          "description" : "Comma-separated mutually exclusive marker pairs as A:B. Co-expression metrics stay NaN when unset.",
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--n_neighbors",
+          "description" : "Neighbours per cell used by the spillover metric.",
+          "default" : [
+            6
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "string",
+          "name" : "--metric_covariate",
+          "description" : "obs column treated as the technical covariate.",
+          "default" : [
+            "area"
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--metric_n_pcs",
+          "description" : "Principal components correlated against the covariate.",
+          "default" : [
+            10
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--dilation_iterations",
+          "description" : "Pixels by which masks are grown to sample proximal background.",
+          "default" : [
+            3
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "double",
+          "name" : "--norm_percentile",
+          "description" : "Percentile of per-cell intensity used to normalise the signal integral.",
+          "default" : [
+            95.0
+          ],
+          "required" : false,
+          "direction" : "input",
+          "multiple" : false,
+          "multiple_sep" : ";"
+        },
+        {
+          "type" : "integer",
+          "name" : "--metric_random_state",
+          "description" : "Random seed used by metric subsampling.",
+          "default" : [
+            0
+          ],
+          "required" : false,
           "direction" : "input",
           "multiple" : false,
           "multiple_sep" : ";"
@@ -3336,127 +3610,30 @@ meta = [
       "arguments" : [
         {
           "type" : "file",
-          "name" : "--output_scores",
-          "description" : "A yaml file containing the scores of each of the methods",
+          "name" : "--outdir",
+          "description" : "Output directory. Alias for --publish_dir.",
           "default" : [
-            "score_uns.yaml"
+            "results_isp"
           ],
           "must_exist" : true,
           "create_parent" : true,
-          "required" : true,
+          "required" : false,
           "direction" : "output",
           "multiple" : false,
           "multiple_sep" : ";"
         },
         {
           "type" : "file",
-          "name" : "--output_method_configs",
+          "name" : "--publish_dir",
+          "description" : "Output directory. Alias for --outdir.",
           "default" : [
-            "method_configs.yaml"
+            "results_isp"
           ],
           "must_exist" : true,
           "create_parent" : true,
-          "required" : true,
+          "required" : false,
           "direction" : "output",
           "multiple" : false,
-          "multiple_sep" : ";"
-        },
-        {
-          "type" : "file",
-          "name" : "--output_metric_configs",
-          "default" : [
-            "metric_configs.yaml"
-          ],
-          "must_exist" : true,
-          "create_parent" : true,
-          "required" : true,
-          "direction" : "output",
-          "multiple" : false,
-          "multiple_sep" : ";"
-        },
-        {
-          "type" : "file",
-          "name" : "--output_dataset_info",
-          "default" : [
-            "dataset_uns.yaml"
-          ],
-          "must_exist" : true,
-          "create_parent" : true,
-          "required" : true,
-          "direction" : "output",
-          "multiple" : false,
-          "multiple_sep" : ";"
-        },
-        {
-          "type" : "file",
-          "name" : "--output_task_info",
-          "default" : [
-            "task_info.yaml"
-          ],
-          "must_exist" : true,
-          "create_parent" : true,
-          "required" : true,
-          "direction" : "output",
-          "multiple" : false,
-          "multiple_sep" : ";"
-        }
-      ]
-    },
-    {
-      "name" : "Method filtering",
-      "description" : "Use these arguments to filter methods by name. By default, all methods are\nrun. If `--methods_include` is defined, only those methods are run. If\n`--methods_exclude` is defined, all methods except those specified are run.\nThese arguments are mutually exclusive, so only `--methods_include` OR\n`--methods_exclude` can set but not both.\n",
-      "arguments" : [
-        {
-          "type" : "file",
-          "name" : "--paramsets",
-          "description" : "A yaml file mapping method ids to named parameter sets, e.g.:\n\n  logistic_regression:\n    strong_regularization:\n      inverse_regularization_strength: 0.1\n    weak_regularization:\n      inverse_regularization_strength: 10.0\n\nEach listed method is run once per parameter set, with the given arguments\nand with `paramset_name`/`paramset` attached to its scores.\nIf not provided, the parameter sets default to the `info.variants`\ndefined in the method components' configs. A method without\n`info.variants` is run once with its default parameter set.\n",
-          "must_exist" : true,
-          "create_parent" : true,
-          "required" : false,
-          "direction" : "input",
-          "multiple" : false,
-          "multiple_sep" : ";"
-        },
-        {
-          "type" : "string",
-          "name" : "--methods_include",
-          "description" : "A list of method ids to include. If specified, only these methods will be run.\nFor parameterised methods, a single paramset can be targeted as `<method_id>.<paramset_name>`, e.g. `logistic_regression.strong_regularization`.\n",
-          "required" : false,
-          "direction" : "input",
-          "multiple" : true,
-          "multiple_sep" : ";"
-        },
-        {
-          "type" : "string",
-          "name" : "--methods_exclude",
-          "description" : "A list of method ids to exclude. If specified, all methods except the ones listed will be run.\nFor parameterised methods, a single paramset can be excluded as `<method_id>.<paramset_name>`, e.g. `logistic_regression.strong_regularization`.\n",
-          "required" : false,
-          "direction" : "input",
-          "multiple" : true,
-          "multiple_sep" : ";"
-        }
-      ]
-    },
-    {
-      "name" : "Metric filtering",
-      "description" : "Use these arguments to filter metrics by name. By default, all metrics are\nrun. If `--metrics_include` is defined, only those metrics are run. If\n`--metrics_exclude` is defined, all metrics except those specified are run.\nThese arguments are mutually exclusive, so only `--metrics_include` OR\n`--metrics_exclude` can set but not both.\n",
-      "arguments" : [
-        {
-          "type" : "string",
-          "name" : "--metrics_include",
-          "description" : "A list of metric ids to include. If specified, only these metrics will be run.\n",
-          "required" : false,
-          "direction" : "input",
-          "multiple" : true,
-          "multiple_sep" : ";"
-        },
-        {
-          "type" : "string",
-          "name" : "--metrics_exclude",
-          "description" : "A list of metric ids to exclude. If specified, all metrics except the ones listed will be run.\n",
-          "required" : false,
-          "direction" : "input",
-          "multiple" : true,
           "multiple_sep" : ";"
         }
       ]
@@ -3478,6 +3655,11 @@ meta = [
       "path" : "/common/nextflow_helpers/helper.nf"
     }
   ],
+  "info" : {
+    "label" : "Spatial proteomics preprocessing benchmark",
+    "summary" : "End-to-end benchmark workflow for spatial proteomics preprocessing",
+    "description" : "Reproducible ISP preprocessing workflow:\nSpatialData zarr -> image correction -> segmentation -> protein aggregation -> QC -> normalization -> metrics.\nThe workflow supports benchmarkable alternatives for image correction, segmentation, aggregation, and quality control.\n"
+  },
   "status" : "enabled",
   "scope" : {
     "image" : "public",
@@ -3485,33 +3667,127 @@ meta = [
   },
   "dependencies" : [
     {
-      "name" : "utils/extract_uns_metadata",
-      "repository" : {
-        "type" : "github",
-        "repo" : "openproblems-bio/openproblems",
-        "tag" : "build/main"
-      }
-    },
-    {
-      "name" : "control_methods/true_labels",
+      "name" : "methods_image_correction/no_image_correction",
       "repository" : {
         "type" : "local"
       }
     },
     {
-      "name" : "control_methods/random_labels",
+      "name" : "methods_image_correction/basic_image_correction",
       "repository" : {
         "type" : "local"
       }
     },
     {
-      "name" : "methods/logistic_regression",
+      "name" : "methods_image_correction/flatfield_image_correction",
       "repository" : {
         "type" : "local"
       }
     },
     {
-      "name" : "metrics/accuracy",
+      "name" : "methods_proteomics_segmentation/basic_threshold_segmentation",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_segmentation/watershed_expand_segmentation",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_segmentation/reference_segmentation",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_protein_aggregation/mean_intensity_aggregation",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_protein_aggregation/sum_intensity_aggregation",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_protein_aggregation/median_intensity_aggregation",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_qc/no_qc_filter",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_qc/basic_qc_filter",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_qc/adaptive_quantile_qc_filter",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_normalization/no_normalization",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_normalization/total_log1p_normalization",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "methods_proteomics_normalization/arcsinh_normalization",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "metrics_proteomics/basic",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "metrics_proteomics/marker_distribution",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "metrics_proteomics/normalization_diagnostics",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "metrics_proteomics/segmentation_quality",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "metrics_proteomics/technical_covariates",
+      "repository" : {
+        "type" : "local"
+      }
+    },
+    {
+      "name" : "metrics_proteomics/signal_background",
       "repository" : {
         "type" : "local"
       }
@@ -3527,7 +3803,7 @@ meta = [
   ],
   "license" : "MIT",
   "links" : {
-    "repository" : "https://github.com/openproblems-bio/task_template",
+    "repository" : "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing",
     "docker_registry" : "ghcr.io"
   },
   "runners" : [
@@ -3573,29 +3849,17 @@ meta = [
     "engine" : "native",
     "output" : "target/nextflow/workflows/run_benchmark",
     "viash_version" : "0.9.7",
-    "git_commit" : "ba236b5eb55a35703b3f5fb92a51d85de24e0c45",
+    "git_commit" : "7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90",
     "git_remote" : "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
   },
   "package_config" : {
-    "name" : "task_template",
+    "name" : "task_spatial_proteomics_preprocessing",
     "version" : "build_main",
-    "label" : "Template",
-    "summary" : "A one sentence summary of purpose and methodology. Used for creating an overview tables.",
-    "description" : "Provide a clear and concise description of your task, detailing the specific problem it aims\nto solve. Outline the input data types, the expected output, and any assumptions or constraints.\nBe sure to explain any terminology or concepts that are essential for understanding the task.\n\nExplain the motivation behind your proposed task. Describe the biological or computational \nproblem you aim to address and why it's important. Discuss the current state of research in\nthis area and any gaps or challenges that your task could help address. This section \nshould convince readers of the significance and relevance of your task.\n",
+    "label" : "Spatial Proteomics Preprocessing",
+    "summary" : "Benchmarking preprocessing workflows that turn multiplexed protein images into cell-by-protein matrices.",
+    "description" : "Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC - produce\nmultiplexed images in which each channel is an antibody-stained protein marker.\nTurning those images into cell-level protein profiles takes a chain of\npreprocessing choices: correcting the image, segmenting cells, aggregating\npixel intensities per cell, applying quality control, and normalizing. Each\nchoice changes the cell-by-protein matrix that every downstream analysis is\nbuilt on, there is no established consensus on which to make, and the effect\nof any single one is rarely reported in isolation.\n\nThis task benchmarks those steps as interchangeable modules. The input is a\nSpatialData Zarr store holding a multichannel image and, optionally, reference\nsegmentation labels. The output is a standardized cell-by-protein AnnData\nobject together with preprocessing quality metrics. Methods within a module\nshare an argument contract, so a run can swap one module while holding the\nrest fixed.\n\nThe metrics are deliberately reference-free wherever possible: they score a\nresult against properties the data must satisfy if preprocessing is correct -\nevery segmented object should contain nuclear signal, nuclear stains repeated\nacross imaging cycles are the same physical nuclei and must agree within a\ncell, markers confined to incompatible lineages should rarely be co-positive,\nand expression should not be explained by how large a cell happened to be.\nThis matters because ground-truth segmentation masks are unavailable for most\nreal datasets, including the public exemplar this task is developed against.\n\nThe task stops at preprocessing. Cell-type annotation and biological\ninterpretation are treated as downstream consumers of the output rather than\nas benchmarked steps.\n\nThe metric implementations live in the `sprotmetrics` package\n(https://github.com/theislab/sprotmetrics); the components here are the Viash\ncontracts around them.\n",
     "info" : {
-      "image" : "thumbnail.svg",
-      "test_resources" : [
-        {
-          "type" : "s3",
-          "path" : "s3://openproblems-data/resources_test/common/cxg_mouse_pancreas_atlas/",
-          "dest" : "resources_test/common/cxg_mouse_pancreas_atlas"
-        },
-        {
-          "type" : "s3",
-          "path" : "s3://openproblems-data/resources_test/task_template/",
-          "dest" : "resources_test/task_template"
-        }
-      ]
+      "image" : "thumbnail.svg"
     },
     "repositories" : [
       {
@@ -3613,36 +3877,44 @@ meta = [
     ],
     "authors" : [
       {
-        "name" : "John Doe",
+        "name" : "Julius Stein",
+        "roles" : [
+          "author"
+        ],
+        "info" : {
+          "github" : "juliusstein77"
+        }
+      },
+      {
+        "name" : "Sergio Marco Salas",
         "roles" : [
           "author",
           "maintainer"
         ],
         "info" : {
-          "github" : "johndoe",
-          "orcid" : "0000-0000-0000-0000",
-          "email" : "john@doe.me",
-          "twitter" : "johndoe",
-          "linkedin" : "johndoe"
+          "github" : "sergiomarco25"
         }
       }
     ],
     "keywords" : [
       "single-cell",
       "openproblems",
-      "benchmark"
+      "benchmark",
+      "spatial proteomics",
+      "multiplexed imaging",
+      "preprocessing"
     ],
     "license" : "MIT",
     "organization" : "openproblems-bio",
     "references" : {
       "doi" : [
-        "10.21203/rs.3.rs-4181617/v1"
+        "10.1038/s41592-021-01308-y"
       ]
     },
     "links" : {
-      "repository" : "https://github.com/openproblems-bio/task_template",
+      "repository" : "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing",
       "docker_registry" : "ghcr.io",
-      "issue_tracker" : "https://github.com/openproblems-bio/task_template/issues"
+      "issue_tracker" : "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues"
     }
   }
 }'''))
@@ -3650,233 +3922,607 @@ meta = [
 
 // resolve dependencies dependencies (if any)
 meta["root_dir"] = getRootDir()
-include { extract_uns_metadata } from "${meta.root_dir}/dependencies/github/openproblems-bio/openproblems/build/main/nextflow/utils/extract_uns_metadata/main.nf"
-include { true_labels } from "${meta.resources_dir}/../../../nextflow/control_methods/true_labels/main.nf"
-include { random_labels } from "${meta.resources_dir}/../../../nextflow/control_methods/random_labels/main.nf"
-include { logistic_regression } from "${meta.resources_dir}/../../../nextflow/methods/logistic_regression/main.nf"
-include { accuracy } from "${meta.resources_dir}/../../../nextflow/metrics/accuracy/main.nf"
+include { no_image_correction } from "${meta.resources_dir}/../../../nextflow/methods_image_correction/no_image_correction/main.nf"
+include { basic_image_correction } from "${meta.resources_dir}/../../../nextflow/methods_image_correction/basic_image_correction/main.nf"
+include { flatfield_image_correction } from "${meta.resources_dir}/../../../nextflow/methods_image_correction/flatfield_image_correction/main.nf"
+include { basic_threshold_segmentation } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_segmentation/basic_threshold_segmentation/main.nf"
+include { watershed_expand_segmentation } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_segmentation/watershed_expand_segmentation/main.nf"
+include { reference_segmentation } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_segmentation/reference_segmentation/main.nf"
+include { mean_intensity_aggregation } from "${meta.resources_dir}/../../../nextflow/methods_protein_aggregation/mean_intensity_aggregation/main.nf"
+include { sum_intensity_aggregation } from "${meta.resources_dir}/../../../nextflow/methods_protein_aggregation/sum_intensity_aggregation/main.nf"
+include { median_intensity_aggregation } from "${meta.resources_dir}/../../../nextflow/methods_protein_aggregation/median_intensity_aggregation/main.nf"
+include { no_qc_filter } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_qc/no_qc_filter/main.nf"
+include { basic_qc_filter } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_qc/basic_qc_filter/main.nf"
+include { adaptive_quantile_qc_filter } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_qc/adaptive_quantile_qc_filter/main.nf"
+include { no_normalization } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_normalization/no_normalization/main.nf"
+include { total_log1p_normalization } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_normalization/total_log1p_normalization/main.nf"
+include { arcsinh_normalization } from "${meta.resources_dir}/../../../nextflow/methods_proteomics_normalization/arcsinh_normalization/main.nf"
+include { basic } from "${meta.resources_dir}/../../../nextflow/metrics_proteomics/basic/main.nf"
+include { marker_distribution } from "${meta.resources_dir}/../../../nextflow/metrics_proteomics/marker_distribution/main.nf"
+include { normalization_diagnostics } from "${meta.resources_dir}/../../../nextflow/metrics_proteomics/normalization_diagnostics/main.nf"
+include { segmentation_quality } from "${meta.resources_dir}/../../../nextflow/metrics_proteomics/segmentation_quality/main.nf"
+include { technical_covariates } from "${meta.resources_dir}/../../../nextflow/metrics_proteomics/technical_covariates/main.nf"
+include { signal_background } from "${meta.resources_dir}/../../../nextflow/metrics_proteomics/signal_background/main.nf"
 
 // inner workflow
 // user-provided Nextflow code
-include { checkItemAllowed; paramsetsFromVariants; expandParamsets; methodMatchesParamset; checkMethodAllowed } from "${meta.resources_dir}/helper.nf"
+nextflow.enable.dsl = 2
 
-workflow auto {
-  findStates(params, meta.config)
-    | meta.workflow.run(
-      auto: [publish: "state"]
-    )
+/*
+ * Spatial proteomics preprocessing benchmark workflow.
+ *
+ * Current modular workflow:
+ * SpatialData zarr
+ *   -> image correction
+ *   -> segmentation
+ *   -> cell-by-protein aggregation
+ *   -> quality control
+ *   -> normalization
+ *   -> preprocessing metrics
+ *
+ * The workflow supports benchmarkable method choices for image correction,
+ * segmentation, protein aggregation, quality control, and normalization using
+ * --image_correction_method, --segmentation_method, --aggregation_method,
+ * --qc_method, and --normalization_method. Metrics are computed as three
+ * complementary benchmark families: basic summary metrics, marker distribution
+ * metrics, and normalization diagnostics.
+ */
+
+ROOT = workflow.launchDir
+PUBLISH_DIR = "${params.outdir ?: params.publish_dir ?: 'results_isp'}"
+
+// Engine the Viash executables run under. Docker is the default and what the
+// benchmark is normally run with; 'native' lets the workflow run where Docker
+// is unavailable, provided the components were built with the same engine.
+VIASH_ENGINE = "${params.viash_engine ?: 'docker'}"
+
+NO_IMAGE_CORRECTION_EXE = "${ROOT}/target/executable/methods_image_correction/no_image_correction/no_image_correction"
+BASIC_IMAGE_CORRECTION_EXE = "${ROOT}/target/executable/methods_image_correction/basic_image_correction/basic_image_correction"
+FLATFIELD_IMAGE_CORRECTION_EXE = "${ROOT}/target/executable/methods_image_correction/flatfield_image_correction/flatfield_image_correction"
+
+THRESHOLD_SEGMENTATION_EXE = "${ROOT}/target/executable/methods_proteomics_segmentation/basic_threshold_segmentation/basic_threshold_segmentation"
+WATERSHED_SEGMENTATION_EXE = "${ROOT}/target/executable/methods_proteomics_segmentation/watershed_expand_segmentation/watershed_expand_segmentation"
+REFERENCE_SEGMENTATION_EXE = "${ROOT}/target/executable/methods_proteomics_segmentation/reference_segmentation/reference_segmentation"
+
+MEAN_AGGREGATION_EXE = "${ROOT}/target/executable/methods_protein_aggregation/mean_intensity_aggregation/mean_intensity_aggregation"
+SUM_AGGREGATION_EXE = "${ROOT}/target/executable/methods_protein_aggregation/sum_intensity_aggregation/sum_intensity_aggregation"
+MEDIAN_AGGREGATION_EXE = "${ROOT}/target/executable/methods_protein_aggregation/median_intensity_aggregation/median_intensity_aggregation"
+
+NO_QC_EXE = "${ROOT}/target/executable/methods_proteomics_qc/no_qc_filter/no_qc_filter"
+BASIC_QC_EXE = "${ROOT}/target/executable/methods_proteomics_qc/basic_qc_filter/basic_qc_filter"
+ADAPTIVE_QC_EXE = "${ROOT}/target/executable/methods_proteomics_qc/adaptive_quantile_qc_filter/adaptive_quantile_qc_filter"
+NO_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/no_normalization/no_normalization"
+TOTAL_LOG1P_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/total_log1p_normalization/total_log1p_normalization"
+ARCSINH_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/arcsinh_normalization/arcsinh_normalization"
+METRICS_BASIC_EXE = "${ROOT}/target/executable/metrics_proteomics/basic/basic"
+METRICS_MARKER_DISTRIBUTION_EXE = "${ROOT}/target/executable/metrics_proteomics/marker_distribution/marker_distribution"
+METRICS_NORMALIZATION_DIAGNOSTICS_EXE = "${ROOT}/target/executable/metrics_proteomics/normalization_diagnostics/normalization_diagnostics"
+METRICS_SEGMENTATION_QUALITY_EXE = "${ROOT}/target/executable/metrics_proteomics/segmentation_quality/segmentation_quality"
+METRICS_TECHNICAL_COVARIATES_EXE = "${ROOT}/target/executable/metrics_proteomics/technical_covariates/technical_covariates"
+METRICS_SIGNAL_BACKGROUND_EXE = "${ROOT}/target/executable/metrics_proteomics/signal_background/signal_background"
+
+process image_correction {
+    tag "image_correction_${params.image_correction_method ?: 'percentile_background'}"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path zarr
+
+    output:
+    path "corrected_image.npy", emit: image
+    path "corrected_markers.json", emit: markers
+
+    script:
+    def method = params.image_correction_method ?: 'percentile_background'
+    def image_key = params.image_key ?: 'null'
+    def background_percentile = params.background_percentile ?: 1.0
+    def rescale_max = params.rescale_max ?: false
+    def flatfield_sigma = params.flatfield_sigma ?: 50.0
+    def flatfield_mode = params.flatfield_mode ?: 'subtract'
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    METHOD="${method}"
+    ZARR_PATH="\$(realpath '${zarr}')"
+    OUT_IMAGE="\$PWD/corrected_image.npy"
+    OUT_MARKERS="\$PWD/corrected_markers.json"
+
+    case "\$METHOD" in
+      no_correction|none)
+        "${NO_IMAGE_CORRECTION_EXE}" \
+          --input_zarr "\$ZARR_PATH" \
+          --image_key "${image_key}" \
+          --output_image "\$OUT_IMAGE" \
+          --output_markers "\$OUT_MARKERS"
+        ;;
+      percentile_background|basic)
+        "${BASIC_IMAGE_CORRECTION_EXE}" \
+          --input_zarr "\$ZARR_PATH" \
+          --image_key "${image_key}" \
+          --background_percentile "${background_percentile}" \
+          --rescale_max "${rescale_max}" \
+          --output_image "\$OUT_IMAGE" \
+          --output_markers "\$OUT_MARKERS"
+        ;;
+      flatfield|flatfield_correction)
+        "${FLATFIELD_IMAGE_CORRECTION_EXE}" \
+          --input_zarr "\$ZARR_PATH" \
+          --image_key "${image_key}" \
+          --background_percentile "${background_percentile}" \
+          --rescale_max "${rescale_max}" \
+          --flatfield_sigma "${flatfield_sigma}" \
+          --flatfield_mode "${flatfield_mode}" \
+          --output_image "\$OUT_IMAGE" \
+          --output_markers "\$OUT_MARKERS"
+        ;;
+      *)
+        echo "ERROR: Unknown image correction method: \$METHOD" >&2
+        echo "Use one of: no_correction, percentile_background, flatfield" >&2
+        exit 1
+        ;;
+    esac
+    """
 }
 
-// construct list of methods and control methods
-methods = [
-  true_labels,
-  random_labels,
-  logistic_regression
-]
+process segment_cells {
+    tag "segmentation_${params.segmentation_method ?: 'threshold'}"
+    publishDir PUBLISH_DIR, mode: 'copy'
 
-// construct list of metrics
-metrics = [
-  accuracy
-]
+    input:
+    path corrected_image
+    path zarr
 
-// serialise data to a yaml file in the temp dir
-def writeYamlFile(data, String filename) {
-  def file = tempFile(filename)
-  file.write(toYamlBlob(data))
-  file
+    output:
+    path "segmentation_labels.npy", emit: labels
+    path "segmentation_metadata.json", optional: true, emit: metadata
+
+    script:
+    def method = params.segmentation_method ?: 'threshold'
+    def nuclei_channel = params.nuclei_channel ?: 0
+    def threshold_quantile = params.threshold_quantile ?: 0.90
+    def min_area = params.segmentation_min_area ?: 30
+    def threshold_method = params.threshold_method ?: 'quantile'
+    def smoothing_sigma = params.smoothing_sigma ?: 1.0
+    def hole_area = params.hole_area ?: 64
+    def expansion_distance = params.expansion_distance ?: 5
+    def labels_key = params.labels_key ?: 'null'
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    METHOD="${method}"
+    IMAGE_PATH="\$(realpath '${corrected_image}')"
+    ZARR_PATH="\$(realpath '${zarr}')"
+    OUT_LABELS="\$PWD/segmentation_labels.npy"
+
+    case "\$METHOD" in
+      threshold|basic_threshold)
+        "${THRESHOLD_SEGMENTATION_EXE}" \
+          --input_image "\$IMAGE_PATH" \
+          --nuclei_channel "${nuclei_channel}" \
+          --threshold_method "${threshold_method}" \
+          --threshold_quantile "${threshold_quantile}" \
+          --min_area "${min_area}" \
+          --output_labels "\$OUT_LABELS" \
+          --output_metadata "\$PWD/segmentation_metadata.json"
+        ;;
+      watershed_expand|watershed)
+        "${WATERSHED_SEGMENTATION_EXE}" \
+          --input_image "\$IMAGE_PATH" \
+          --nuclei_channel "${nuclei_channel}" \
+          --threshold_method "${threshold_method}" \
+          --threshold_quantile "${threshold_quantile}" \
+          --smoothing_sigma "${smoothing_sigma}" \
+          --min_area "${min_area}" \
+          --hole_area "${hole_area}" \
+          --expansion_distance "${expansion_distance}" \
+          --output_labels "\$OUT_LABELS" \
+          --output_metadata "\$PWD/segmentation_metadata.json"
+        ;;
+      reference|existing_labels)
+        "${REFERENCE_SEGMENTATION_EXE}" \
+          --input_zarr "\$ZARR_PATH" \
+          --labels_key "${labels_key}" \
+          --output_labels "\$OUT_LABELS" \
+          --output_metadata "\$PWD/segmentation_metadata.json"
+        ;;
+      *)
+        echo "ERROR: Unknown segmentation method: \$METHOD" >&2
+        echo "Use one of: threshold, watershed_expand, reference" >&2
+        exit 1
+        ;;
+    esac
+    """
+}
+
+process aggregate_proteins {
+    tag "aggregation_${params.aggregation_method ?: 'mean'}"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path corrected_image
+    path segmentation_labels
+    path corrected_markers
+
+    output:
+    path "cell_by_protein.h5ad", emit: adata
+
+    script:
+    def method = params.aggregation_method ?: 'mean'
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    METHOD="${method}"
+    IMAGE_PATH="\$(realpath '${corrected_image}')"
+    LABELS_PATH="\$(realpath '${segmentation_labels}')"
+    MARKERS_PATH="\$(realpath '${corrected_markers}')"
+    OUT_PATH="\$PWD/cell_by_protein.h5ad"
+
+    case "\$METHOD" in
+      mean|mean_intensity)
+        "${MEAN_AGGREGATION_EXE}" \
+          --input_image "\$IMAGE_PATH" \
+          --input_labels "\$LABELS_PATH" \
+          --input_markers "\$MARKERS_PATH" \
+          --output "\$OUT_PATH"
+        ;;
+      sum|sum_intensity)
+        "${SUM_AGGREGATION_EXE}" \
+          --input_image "\$IMAGE_PATH" \
+          --input_labels "\$LABELS_PATH" \
+          --input_markers "\$MARKERS_PATH" \
+          --output "\$OUT_PATH"
+        ;;
+      median|median_intensity)
+        "${MEDIAN_AGGREGATION_EXE}" \
+          --input_image "\$IMAGE_PATH" \
+          --input_labels "\$LABELS_PATH" \
+          --input_markers "\$MARKERS_PATH" \
+          --output "\$OUT_PATH"
+        ;;
+      *)
+        echo "ERROR: Unknown aggregation method: \$METHOD" >&2
+        echo "Use one of: mean, sum, median" >&2
+        exit 1
+        ;;
+    esac
+    """
+}
+
+process qc_filter {
+    tag "qc_${params.qc_method ?: 'fixed_threshold'}"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "cell_by_protein_qc.h5ad", emit: adata
+
+    script:
+    def method = params.qc_method ?: 'fixed_threshold'
+    def min_area = params.containsKey('min_area') ? params.min_area : 50
+    def min_total = params.containsKey('min_total') ? params.min_total : 0.0
+    def area_quantile = params.containsKey('area_quantile') ? params.area_quantile : 0.05
+    def total_quantile = params.containsKey('total_quantile') ? params.total_quantile : 0.05
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    METHOD="${method}"
+    IN_PATH="\$(realpath '${adata_in}')"
+    OUT_PATH="\$PWD/cell_by_protein_qc.h5ad"
+
+    case "\$METHOD" in
+      no_qc|none|all_pass)
+        "${NO_QC_EXE}" \
+          --input "\$IN_PATH" \
+          --min_area "${min_area}" \
+          --min_total "${min_total}" \
+          --area_quantile "${area_quantile}" \
+          --total_quantile "${total_quantile}" \
+          --output "\$OUT_PATH"
+        ;;
+      fixed_threshold|basic)
+        "${BASIC_QC_EXE}" \
+          --input "\$IN_PATH" \
+          --min_area "${min_area}" \
+          --min_total "${min_total}" \
+          --area_quantile "${area_quantile}" \
+          --total_quantile "${total_quantile}" \
+          --output "\$OUT_PATH"
+        ;;
+      adaptive_quantile|quantile)
+        "${ADAPTIVE_QC_EXE}" \
+          --input "\$IN_PATH" \
+          --min_area "${min_area}" \
+          --min_total "${min_total}" \
+          --area_quantile "${area_quantile}" \
+          --total_quantile "${total_quantile}" \
+          --output "\$OUT_PATH"
+        ;;
+      *)
+        echo "ERROR: Unknown QC method: \$METHOD" >&2
+        echo "Use one of: no_qc, fixed_threshold, adaptive_quantile" >&2
+        exit 1
+        ;;
+    esac
+    """
+}
+
+process normalize {
+    tag "normalization_${params.normalization_method ?: 'total_log1p'}"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "cell_by_protein_norm.h5ad", emit: adata
+
+    script:
+    def method = params.normalization_method ?: 'total_log1p'
+    def scale = params.containsKey('scale') ? params.scale : 10000
+    def cofactor = params.containsKey('cofactor') ? params.cofactor : 5.0
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    METHOD="${method}"
+    IN_PATH="\$(realpath '${adata_in}')"
+    OUT_PATH="\$PWD/cell_by_protein_norm.h5ad"
+
+    case "\$METHOD" in
+      no_normalization|none|raw)
+        "${NO_NORMALIZATION_EXE}" \
+          --input "\$IN_PATH" \
+          --scale "${scale}" \
+          --cofactor "${cofactor}" \
+          --output "\$OUT_PATH"
+        ;;
+      total_log1p|total_log1p_normalization|log1p|total)
+        "${TOTAL_LOG1P_NORMALIZATION_EXE}" \
+          --input "\$IN_PATH" \
+          --scale "${scale}" \
+          --cofactor "${cofactor}" \
+          --output "\$OUT_PATH"
+        ;;
+      arcsinh|arcsinh_normalization|asinh)
+        "${ARCSINH_NORMALIZATION_EXE}" \
+          --input "\$IN_PATH" \
+          --scale "${scale}" \
+          --cofactor "${cofactor}" \
+          --output "\$OUT_PATH"
+        ;;
+      *)
+        echo "ERROR: Unknown normalization method: \$METHOD" >&2
+        echo "Use one of: no_normalization, total_log1p, arcsinh" >&2
+        exit 1
+        ;;
+    esac
+    """
+}
+
+process compute_basic_metrics {
+    tag "metrics_basic"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "metrics_basic.h5ad", emit: metrics
+
+    script:
+    def cov_thr = params.cov_thr ?: 0.1
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    IN_PATH="\$(realpath '${adata_in}')"
+    OUT_PATH="\$PWD/metrics_basic.h5ad"
+
+    "${METRICS_BASIC_EXE}" \
+      --input "\$IN_PATH" \
+      --cov_thr "${cov_thr}" \
+      --output "\$OUT_PATH"
+    """
+}
+
+process compute_marker_distribution_metrics {
+    tag "metrics_marker_distribution"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "metrics_marker_distribution.h5ad", emit: metrics
+
+    script:
+    def layer = params.metric_marker_layer ?: 'counts'
+    def zero_threshold = params.containsKey('zero_threshold') ? params.zero_threshold : 0.0
+    def coverage_threshold = params.cov_thr ?: 0.1
+    def low_quantile = params.containsKey('metric_low_quantile') ? params.metric_low_quantile : 0.01
+    def high_quantile = params.containsKey('metric_high_quantile') ? params.metric_high_quantile : 0.99
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    IN_PATH="\$(realpath '${adata_in}')"
+    OUT_PATH="\$PWD/metrics_marker_distribution.h5ad"
+
+    "${METRICS_MARKER_DISTRIBUTION_EXE}" \
+      --input "\$IN_PATH" \
+      --layer "${layer}" \
+      --zero_threshold "${zero_threshold}" \
+      --coverage_threshold "${coverage_threshold}" \
+      --low_quantile "${low_quantile}" \
+      --high_quantile "${high_quantile}" \
+      --output "\$OUT_PATH"
+    """
+}
+
+process compute_normalization_diagnostics {
+    tag "metrics_normalization_diagnostics"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "metrics_normalization_diagnostics.h5ad", emit: metrics
+
+    script:
+    def raw_layer = params.metric_raw_layer ?: 'counts'
+    def normalized_layer = params.metric_normalized_layer ?: 'normalized'
+    def max_cells = params.containsKey('metric_max_cells') ? params.metric_max_cells : 5000
+    def random_state = params.containsKey('metric_random_state') ? params.metric_random_state : 0
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    IN_PATH="\$(realpath '${adata_in}')"
+    OUT_PATH="\$PWD/metrics_normalization_diagnostics.h5ad"
+
+    "${METRICS_NORMALIZATION_DIAGNOSTICS_EXE}" \
+      --input "\$IN_PATH" \
+      --raw_layer "${raw_layer}" \
+      --normalized_layer "${normalized_layer}" \
+      --max_cells "${max_cells}" \
+      --random_state "${random_state}" \
+      --output "\$OUT_PATH"
+    """
+}
+
+process compute_segmentation_quality_metrics {
+    tag "metrics_segmentation_quality"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "metrics_segmentation_quality.h5ad", emit: metrics
+
+    script:
+    def layer = params.metric_marker_layer ?: 'counts'
+    def nuclear_markers = params.nuclear_markers ?: 'null'
+    def exclusive_pairs = params.exclusive_pairs ?: 'null'
+    def n_neighbors = params.containsKey('n_neighbors') ? params.n_neighbors : 6
+    def max_cells = params.containsKey('metric_max_cells') ? params.metric_max_cells : 5000
+    def random_state = params.containsKey('metric_random_state') ? params.metric_random_state : 0
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    "${METRICS_SEGMENTATION_QUALITY_EXE}" \
+      --input "\$(realpath '${adata_in}')" \
+      --layer "${layer}" \
+      --nuclear_markers "${nuclear_markers}" \
+      --exclusive_pairs "${exclusive_pairs}" \
+      --n_neighbors "${n_neighbors}" \
+      --max_cells "${max_cells}" \
+      --random_state "${random_state}" \
+      --output "\$PWD/metrics_segmentation_quality.h5ad"
+    """
+}
+
+process compute_technical_covariate_metrics {
+    tag "metrics_technical_covariates"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path adata_in
+
+    output:
+    path "metrics_technical_covariates.h5ad", emit: metrics
+
+    script:
+    def layer = params.metric_normalized_layer ?: 'normalized'
+    def covariate = params.metric_covariate ?: 'area'
+    def n_pcs = params.containsKey('metric_n_pcs') ? params.metric_n_pcs : 10
+    def max_cells = params.containsKey('metric_max_cells') ? params.metric_max_cells : 5000
+    def random_state = params.containsKey('metric_random_state') ? params.metric_random_state : 0
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    "${METRICS_TECHNICAL_COVARIATES_EXE}" \
+      --input "\$(realpath '${adata_in}')" \
+      --layer "${layer}" \
+      --covariate "${covariate}" \
+      --n_pcs "${n_pcs}" \
+      --max_cells "${max_cells}" \
+      --random_state "${random_state}" \
+      --output "\$PWD/metrics_technical_covariates.h5ad"
+    """
+}
+
+process compute_signal_background_metrics {
+    tag "metrics_signal_background"
+    publishDir PUBLISH_DIR, mode: 'copy'
+
+    input:
+    path corrected_image
+    path segmentation_labels
+    path corrected_markers
+    path adata_qc
+
+    output:
+    path "metrics_signal_background.h5ad", emit: metrics
+
+    script:
+    def dilation_iterations = params.containsKey('dilation_iterations') ? params.dilation_iterations : 3
+    def norm_percentile = params.containsKey('norm_percentile') ? params.norm_percentile : 95.0
+    def random_state = params.containsKey('metric_random_state') ? params.metric_random_state : 0
+    """
+    set -euo pipefail
+    export VIASH_ENGINE_TYPE=${VIASH_ENGINE}
+
+    "${METRICS_SIGNAL_BACKGROUND_EXE}" \
+      --input_image "\$(realpath '${corrected_image}')" \
+      --input_labels "\$(realpath '${segmentation_labels}')" \
+      --input_markers "\$(realpath '${corrected_markers}')" \
+      --input_qc "\$(realpath '${adata_qc}')" \
+      --dilation_iterations "${dilation_iterations}" \
+      --norm_percentile "${norm_percentile}" \
+      --random_state "${random_state}" \
+      --output "\$PWD/metrics_signal_background.h5ad"
+    """
 }
 
 workflow run_wf {
-  take:
-  input_ch
+    input_zarr = params.zarr ?: params.input_zarr
 
-  main:
-
-  /****************************
-   * EXTRACT DATASET METADATA *
-   ****************************/
-  dataset_ch = input_ch
-    // store join id
-    | map{ id, state -> 
-      [id, state + ["_meta": [join_id: id]]]
+    if (input_zarr == null) {
+        error "No input Zarr provided. Use --zarr or --input_zarr."
     }
 
-    // extract the dataset metadata
-    | extract_uns_metadata.run(
-      fromState: [input: "input_solution"],
-      toState: { id, output, state ->
-        state + [
-          dataset_uns: readYaml(output.output).uns
-        ]
-      }
+    zarr_ch = Channel.value(file(input_zarr))
+
+    corrected = image_correction(zarr_ch)
+    segmentation = segment_cells(corrected.image, zarr_ch)
+    aggregated = aggregate_proteins(corrected.image, segmentation.labels, corrected.markers)
+    qc = qc_filter(aggregated.adata)
+    norm = normalize(qc.adata)
+    basic_metrics = compute_basic_metrics(norm.adata)
+    marker_metrics = compute_marker_distribution_metrics(norm.adata)
+    normalization_metrics = compute_normalization_diagnostics(norm.adata)
+    segmentation_quality_metrics = compute_segmentation_quality_metrics(norm.adata)
+    technical_covariate_metrics = compute_technical_covariate_metrics(norm.adata)
+    signal_background_metrics = compute_signal_background_metrics(
+        corrected.image, segmentation.labels, corrected.markers, qc.adata
     )
 
-  /***************************
-   * RUN METHODS AND METRICS *
-   ***************************/
-  score_ch = dataset_ch
-
-    // expand the channel so parameterised methods run once per paramset.
-    // the paramsets are read from the --paramsets file if provided, and
-    // default to the method components' info.variants.
-    | flatMap { id, state ->
-      def method_paramsets = state.paramsets
-        ? readYaml(state.paramsets)
-        : paramsetsFromVariants(methods)
-      expandParamsets(id, state, method_paramsets)
-    }
-
-    // run all methods
-    | runEach(
-      components: methods,
-
-      // use the 'filter' argument to only run a method on the normalisation the
-      // component is asking for, to match paramset-tagged states to their method,
-      // and to filter by --methods_include/--methods_exclude
-      filter: { id, state, comp ->
-        def norm = state.dataset_uns.normalization_id
-        def pref = comp.config.info.preferred_normalization
-        // if the preferred normalisation is none at all,
-        // we can pass whichever dataset we want
-        def norm_check = (norm == "log_cp10k" && pref == "counts") || norm == pref
-        def paramset_check = methodMatchesParamset(state, comp.config.name)
-        def method_check = checkMethodAllowed(
-          comp.config.name,
-          state.paramset_name,
-          state.methods_include,
-          state.methods_exclude
-        )
-
-        norm_check && paramset_check && method_check
-      },
-
-      // define a new 'id' by appending the method name and paramset name to the dataset id
-      id: { id, state, comp ->
-        id + "." + comp.config.name + (state.paramset_name ? "." + state.paramset_name : "")
-      },
-
-      // use 'fromState' to fetch the arguments the component requires from the overall state,
-      // along with the paramset arguments (if any)
-      fromState: { id, state, comp ->
-        def new_args = [
-          input_train: state.input_train,
-          input_test: state.input_test
-        ]
-        if (comp.config.info.type == "control_method") {
-          new_args.input_solution = state.input_solution
-        }
-        new_args + (state.paramset ?: [:])
-      },
-
-      // use 'toState' to publish that component's outputs to the overall state
-      toState: { id, output, state, comp ->
-        state + [
-          method_id: comp.config.name,
-          method_output: output.output
-        ]
-      }
-    )
-
-    // run all metrics
-    | runEach(
-      components: metrics,
-
-      // use the 'filter' argument to only run the metrics the user asked for
-      filter: { id, state, comp ->
-        checkItemAllowed(
-          comp.config.name,
-          state.metrics_include,
-          state.metrics_exclude,
-          "metrics_include",
-          "metrics_exclude"
-        )
-      },
-
-      id: { id, state, comp ->
-        id + "." + comp.config.name
-      },
-      // use 'fromState' to fetch the arguments the component requires from the overall state
-      fromState: [
-        input_solution: "input_solution", 
-        input_prediction: "method_output"
-      ],
-      // use 'toState' to publish that component's outputs to the overall state
-      toState: { id, output, state, comp ->
-        state + [
-          metric_id: comp.config.name,
-          metric_output: output.output
-        ]
-      }
-    )
-
-    // extract the scores, tagged with the paramset used for the method
-    // (null for control methods and methods without paramsets)
-    | extract_uns_metadata.run(
-      key: "extract_scores",
-      fromState: [input: "metric_output"],
-      toState: { id, output, state ->
-        def uns = readYaml(output.output).uns
-        uns.paramset_name = state.paramset_name
-        uns.paramset = state.paramset
-        state + [
-          score_uns: uns
-        ]
-      }
-    )
-
-    // store the scores in a file
-    | joinStates { ids, states ->
-      ["output", [output_scores: writeYamlFile(states.collect{it.score_uns}, "score_uns.yaml")]]
-    }
-
-  /******************************
-   * GENERATE OUTPUT YAML FILES *
-   ******************************/
-  meta_ch = dataset_ch
-    // only keep one of the normalization methods
-    | filter{ id, state ->
-      state.dataset_uns.normalization_id == "log_cp10k"
-    }
-    | joinStates { ids, states ->
-      // gather the dataset metadata, without the normalization id
-      def dataset_uns = states.collect{state ->
-        def uns = state.dataset_uns.clone()
-        uns.remove("normalization_id")
-        uns
-      }
-
-      // gather the task info and annotate it with the commit and timestamp
-      def task_info = readYaml(meta.resources_dir.resolve("_viash.yaml"))
-      // commitId is null when nextflow runs from a local checkout instead of a revision
-      if (workflow.commitId) {
-        task_info.commit = workflow.commitId
-      }
-      // the launch time -- workflow.complete is only known once the run is over
-      task_info.timestamp = workflow.start.toInstant()
-        .truncatedTo(java.time.temporal.ChronoUnit.SECONDS).toString()
-
-      // store the dataset metadata, component configs and task info in files
-      def new_state = [
-        output_dataset_info: writeYamlFile(dataset_uns, "dataset_uns.yaml"),
-        output_method_configs: writeYamlFile(methods.collect{it.config}, "method_configs.yaml"),
-        output_metric_configs: writeYamlFile(metrics.collect{it.config}, "metric_configs.yaml"),
-        output_task_info: writeYamlFile(task_info, "task_info.yaml"),
-        _meta: states[0]._meta
-      ]
-
-      ["output", new_state]
-    }
-
-  // merge all of the output data
-  output_ch = score_ch
-    | mix(meta_ch)
-    | joinStates{ ids, states ->
-      def mergedStates = states.inject([:]) { acc, m -> acc + m }
-      [ids[0], mergedStates]
-    }
-
-  emit:
-  output_ch
+    basic_metrics.metrics.view { "Done. Basic metrics written to: ${it}" }
+    marker_metrics.metrics.view { "Done. Marker distribution metrics written to: ${it}" }
+    normalization_metrics.metrics.view { "Done. Normalization diagnostics written to: ${it}" }
+    segmentation_quality_metrics.metrics.view { "Done. Segmentation quality metrics written to: ${it}" }
+    technical_covariate_metrics.metrics.view { "Done. Technical covariate metrics written to: ${it}" }
+    signal_background_metrics.metrics.view { "Done. Signal/background metrics written to: ${it}" }
 }
 
 // inner workflow hook
