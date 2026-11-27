@@ -54,6 +54,7 @@ for q in \
   "methods_proteomics_normalization/no_normalization" \
   "methods_proteomics_normalization/total_log1p_normalization" \
   "methods_proteomics_normalization/arcsinh_normalization" \
+  "methods_proteomics_normalization/clr_normalization" \
   "metrics_proteomics/basic" \
   "metrics_proteomics/marker_distribution" \
   "metrics_proteomics/normalization_diagnostics"  \

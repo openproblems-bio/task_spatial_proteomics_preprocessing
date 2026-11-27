@@ -1,0 +1,37 @@
+__merge__: /src/api/comp_method_proteomics_normalization.yaml
+
+name: clr_normalization
+label: "CLR normalization"
+summary: "Per-cell centred log-ratio transformation of raw intensities"
+description: |
+  Centred log-ratio (CLR) normalization, computed per cell across markers as in
+  Seurat's CLR for CITE-seq antibody-derived tags. For each cell, raw marker
+  intensities are divided by the geometric-mean-like factor
+  exp(mean(log1p(x))) and then log1p-transformed. This removes per-cell
+  differences in overall staining intensity while keeping relative marker
+  levels, and is a common choice for antibody-based protein measurements.
+references:
+  doi:
+    - 10.1038/nmeth.4380
+links:
+  documentation: https://satijalab.org/seurat/reference/normalizedata
+  repository: https://github.com/satijalab/seurat
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - "numpy"
+          - "scipy"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

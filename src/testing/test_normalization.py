@@ -90,6 +90,13 @@ elif name == "arcsinh_normalization":
     assert np.allclose(norm, expected, rtol=1e-4, atol=1e-5), (
         "normalized layer does not match arcsinh(x / cofactor)"
     )
+elif name == "clr_normalization":
+    clipped = np.clip(raw, 0.0, None)
+    geo = np.exp(np.log1p(clipped).mean(axis=1, keepdims=True))
+    expected = np.log1p(clipped / geo)
+    assert np.allclose(norm, expected, rtol=1e-4, atol=1e-5), (
+        "normalized layer does not match per-cell CLR log1p(x / exp(mean(log1p(x))))"
+    )
 else:
     raise AssertionError(f"no expected transformation defined for component '{name}'")
 

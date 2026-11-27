@@ -46,6 +46,7 @@ ADAPTIVE_QC_EXE = "${ROOT}/target/executable/methods_proteomics_qc/adaptive_quan
 NO_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/no_normalization/no_normalization"
 TOTAL_LOG1P_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/total_log1p_normalization/total_log1p_normalization"
 ARCSINH_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/arcsinh_normalization/arcsinh_normalization"
+CLR_NORMALIZATION_EXE = "${ROOT}/target/executable/methods_proteomics_normalization/clr_normalization/clr_normalization"
 METRICS_BASIC_EXE = "${ROOT}/target/executable/metrics_proteomics/basic/basic"
 METRICS_MARKER_DISTRIBUTION_EXE = "${ROOT}/target/executable/metrics_proteomics/marker_distribution/marker_distribution"
 METRICS_NORMALIZATION_DIAGNOSTICS_EXE = "${ROOT}/target/executable/metrics_proteomics/normalization_diagnostics/normalization_diagnostics"
@@ -348,9 +349,16 @@ process normalize {
           --cofactor "${cofactor}" \
           --output "\$OUT_PATH"
         ;;
+      clr|clr_normalization)
+        "${CLR_NORMALIZATION_EXE}" \
+          --input "\$IN_PATH" \
+          --scale "${scale}" \
+          --cofactor "${cofactor}" \
+          --output "\$OUT_PATH"
+        ;;
       *)
         echo "ERROR: Unknown normalization method: \$METHOD" >&2
-        echo "Use one of: no_normalization, total_log1p, arcsinh" >&2
+        echo "Use one of: no_normalization, total_log1p, arcsinh, clr" >&2
         exit 1
         ;;
     esac

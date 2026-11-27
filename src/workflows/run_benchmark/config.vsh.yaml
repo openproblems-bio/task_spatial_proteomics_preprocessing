@@ -180,7 +180,7 @@ argument_groups:
         direction: input
         required: false
         default: "total_log1p"
-        description: "Normalization method. One of no_normalization, total_log1p, or arcsinh."
+        description: "Normalization method. One of no_normalization, total_log1p, arcsinh, or clr."
       - name: "--scale"
         type: double
         direction: input
@@ -339,6 +339,7 @@ dependencies:
   - name: methods_proteomics_normalization/no_normalization
   - name: methods_proteomics_normalization/total_log1p_normalization
   - name: methods_proteomics_normalization/arcsinh_normalization
+  - name: methods_proteomics_normalization/clr_normalization
   - name: metrics_proteomics/basic
   - name: metrics_proteomics/marker_distribution
   - name: metrics_proteomics/normalization_diagnostics
