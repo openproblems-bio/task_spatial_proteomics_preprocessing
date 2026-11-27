@@ -8,9 +8,54 @@ description: |
   and optional expansion of nuclear labels toward approximate cell regions. This provides a stronger
   classical baseline than simple connected-component thresholding.
 
+arguments:
+  - name: "--threshold_method"
+    type: string
+    direction: input
+    required: false
+    default: "quantile"
+    description: "Strategy used to threshold the nuclear channel. One of quantile or otsu."
+  - name: "--threshold_quantile"
+    type: double
+    direction: input
+    required: false
+    default: 0.90
+    description: "Quantile used to threshold the nuclear channel."
+  - name: "--min_area"
+    type: integer
+    direction: input
+    required: false
+    default: 30
+    description: "Minimum object size in pixels."
+  - name: "--smoothing_sigma"
+    type: double
+    direction: input
+    required: false
+    default: 1.0
+    description: "Gaussian smoothing sigma used by watershed-based segmentation."
+  - name: "--hole_area"
+    type: integer
+    direction: input
+    required: false
+    default: 64
+    description: "Maximum hole area removed from the nuclear foreground mask."
+  - name: "--seed_min_distance"
+    type: integer
+    direction: input
+    required: false
+    default: 5
+    description: "Minimum distance between watershed seed points."
+  - name: "--expansion_distance"
+    type: integer
+    direction: input
+    required: false
+    default: 5
+    description: "Pixel distance used to expand nuclear labels toward approximate cell regions."
+
 resources:
   - type: python_script
     path: script.py
+  - path: /src/utils/segmentation_utils.py
 
 engines:
   - type: docker

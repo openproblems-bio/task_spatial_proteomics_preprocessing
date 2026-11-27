@@ -5,7 +5,7 @@ from scipy import ndimage as ndi
 from skimage.filters import gaussian, threshold_otsu
 from skimage.feature import peak_local_max
 from skimage.measure import label
-from skimage.morphology import remove_small_objects, remove_small_holes, binary_closing, disk
+from skimage.morphology import binary_closing, disk
 from skimage.segmentation import watershed, expand_labels, relabel_sequential
 
 
@@ -47,7 +47,6 @@ def _make_markers(distance: np.ndarray, mask: np.ndarray, min_distance: int) -> 
 
 
 def run(par: dict):
-    input_image = par["input_image"]
     nuclei_channel = int(par.get("nuclei_channel", 0))
     threshold_method = par.get("threshold_method") or "quantile"
     threshold_quantile = float(par.get("threshold_quantile", 0.90))
@@ -59,18 +58,10 @@ def run(par: dict):
     output_labels = par["output_labels"]
     output_metadata = par.get("output_metadata")
 
-    img = np.load(input_image)
-    if img.ndim != 3:
-        raise ValueError(f"Expected image in channel-y-x format, got shape {img.shape}")
-    if nuclei_channel < 0 or nuclei_channel >= img.shape[0]:
-        raise ValueError(
-            f"nuclei_channel={nuclei_channel} out of range for image with {img.shape[0]} channels"
-        )
-
-    nuc = img[nuclei_channel].astype(np.float32)
+    # Selects the nuclear channel by marker name when --nuclear_markers is set,
+    # and by --nuclei_channel otherwise.
+    _, nuc, _, channel_info = load_image_and_channels(par)
     finite = nuc[np.isfinite(nuc)]
-    if finite.size == 0:
-        raise ValueError("Nuclei channel contains no finite values.")
 
     if smoothing_sigma > 0:
         nuc_smooth = gaussian(nuc, sigma=smoothing_sigma, preserve_range=True)
@@ -107,6 +98,7 @@ def run(par: dict):
                 {
                     "method": "watershed_expand_segmentation",
                     "nuclei_channel": nuclei_channel,
+                    "input_channels": channel_info,
                     "threshold_method": str(threshold_method).lower(),
                     "threshold_quantile": threshold_quantile,
                     "threshold_value": thr,
@@ -126,6 +118,8 @@ def run(par: dict):
 ## VIASH START
 par = {
     "input_image": "corrected_image.npy",
+    "input_markers": None,
+    "nuclear_markers": None,
     "nuclei_channel": 0,
     "threshold_method": "quantile",
     "threshold_quantile": 0.90,
@@ -137,8 +131,17 @@ par = {
     "output_labels": "segmentation_labels.npy",
     "output_metadata": None,
 }
-meta = {"name": "watershed_expand_segmentation"}
+meta = {"name": "watershed_expand_segmentation", "resources_dir": "src/utils"}
 ## VIASH END
+
+import sys  # noqa: E402
+
+sys.path.append(meta["resources_dir"])
+from segmentation_utils import (  # noqa: E402
+    load_image_and_channels,
+    remove_small_holes,
+    remove_small_objects,
+)
 
 if __name__ == "__main__":
     run(par)

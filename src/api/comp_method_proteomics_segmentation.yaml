@@ -8,12 +8,31 @@ info:
     description: |
       Produces a cell label image from corrected multichannel protein images or from reference labels stored in a SpatialData object.
       The API is intentionally shared by multiple segmentation methods so that benchmark workflows can swap methods while preserving standardized outputs.
+
+      Only the arguments every method understands live here. Method-specific
+      hyperparameters are declared in each component's own config.
+
+      Image-derived methods choose their input channels in one of two ways.
+      If `--nuclear_markers` (and, for methods that use a cell-boundary channel,
+      `--membrane_markers`) are given together with `--input_markers`, the named
+      markers are looked up in the marker list. When several markers are named,
+      each is rescaled to its 1st-99.8th percentile range and the results are
+      max-projected into one channel. Otherwise `--nuclei_channel` selects the
+      nuclear channel by index.
 arguments:
   - name: "--input_image"
     type: file
     direction: input
     required: false
     description: "Corrected image as numpy array in channel-y-x format. Required for image-derived segmentation methods."
+  - name: "--input_markers"
+    type: file
+    direction: input
+    required: false
+    example: corrected_markers.json
+    description: |
+      Marker-name sidecar written by image correction (`{"markers": [...]}`), in
+      channel order. Required only when channels are selected by name.
   - name: "--input_zarr"
     type: file
     direction: input
@@ -30,49 +49,23 @@ arguments:
     direction: input
     required: false
     default: 0
-    description: "Channel index used as nuclear marker for image-derived segmentation."
-  - name: "--threshold_method"
+    description: "Channel index used as nuclear marker when `--nuclear_markers` is not given."
+  - name: "--nuclear_markers"
     type: string
     direction: input
     required: false
-    default: "quantile"
-    description: "Strategy used to threshold the nuclear channel. One of quantile or otsu."
-  - name: "--threshold_quantile"
-    type: double
+    description: |
+      Comma-separated nuclear/DNA marker names, for example `DNA_1,DNA_2`.
+      Matched case-insensitively against `--input_markers`. Overrides
+      `--nuclei_channel`.
+  - name: "--membrane_markers"
+    type: string
     direction: input
     required: false
-    default: 0.90
-    description: "Quantile used to threshold the nuclear channel."
-  - name: "--min_area"
-    type: integer
-    direction: input
-    required: false
-    default: 30
-    description: "Minimum object size in pixels."
-  - name: "--smoothing_sigma"
-    type: double
-    direction: input
-    required: false
-    default: 1.0
-    description: "Gaussian smoothing sigma used by watershed-based segmentation."
-  - name: "--hole_area"
-    type: integer
-    direction: input
-    required: false
-    default: 64
-    description: "Maximum hole area removed from the nuclear foreground mask."
-  - name: "--seed_min_distance"
-    type: integer
-    direction: input
-    required: false
-    default: 5
-    description: "Minimum distance between watershed seed points."
-  - name: "--expansion_distance"
-    type: integer
-    direction: input
-    required: false
-    default: 5
-    description: "Pixel distance used to expand nuclear labels toward approximate cell regions."
+    description: |
+      Comma-separated membrane/cytoplasm marker names, for example
+      `ECAD,CD45,PanCK`. Used only by methods that segment whole cells from a
+      boundary channel (Cellpose, Cellpose-SAM); nuclear-only methods ignore it.
   - name: "--output_labels"
     example: segmentation_labels.npy
     type: file

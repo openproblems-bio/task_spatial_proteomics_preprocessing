@@ -16,6 +16,50 @@ carried across.
 * Six metric families in `metrics_proteomics`, wrapping
   [`sprotmetrics`](https://github.com/theislab/sprotmetrics) `0.1.0`.
 
+### Segmentation methods ported from task_ist_preprocessing
+
+* Five segmentation components adapted from
+  `openproblems-bio/task_ist_preprocessing`: `cellpose_segmentation`
+  (Cellpose 3: cyto, cyto2, cyto3 or nuclei), `cellposev4_segmentation`
+  (Cellpose-SAM), `stardist_segmentation`, `watershed_txsim_segmentation`
+  and `binning_segmentation`. The algorithms and default hyperparameters are
+  kept. I/O is rewritten to this task's `.npy` contract (gapless int32
+  labels and a metadata JSON). The txsim watershed and binning logic is
+  inlined, so these components no longer depend on txsim, squidpy or
+  rasterio. Integer-valued images (stored as float32 by image correction)
+  are cast back to uint16 and take txsim's exact code path. Against
+  `txsim.preprocessing.segment_watershed` with scikit-image 0.26 the masks
+  were pixel-identical on 6 synthetic images × 6 option sets (IST defaults,
+  equalize_hist, median blur, global Otsu, bg factor 0.9, compact
+  watershed). Genuinely float images are scaled to [0, 1] first, which can
+  shift a few boundary pixels. `custom_segmentation` was not ported because
+  `reference_segmentation` already covers it.
+* The deep-learning components carry the same GPU directive labels as in
+  IST (`gpuhighmem` for both Cellpose components, `gpu` for StarDist). As in
+  IST, these labels are not defined in `_viash.yaml`'s `config_mods`, so the
+  Nextflow profile has to map them to GPU resources. StarDist and Cellpose
+  weights are downloaded into the images at build time.
+* `remove_small_objects` / `remove_small_holes` calls go through a
+  version-agnostic helper. It uses `max_size` where scikit-image provides it
+  (0.26+, where `min_size` / `area_threshold` are deprecated), with the same
+  numeric value, which gives the same masks without the warning. Outputs of
+  `basic_threshold_segmentation` and `watershed_expand_segmentation` were
+  checked to be unchanged.
+* Segmentation methods can select channels by marker name.
+  `--input_markers` (the image-correction sidecar) together with
+  `--nuclear_markers` and `--membrane_markers` replaces the IST components'
+  hard-coded `image[0]`. Several names are percentile-scaled and
+  max-projected. `--nuclei_channel` remains the fallback. Both Cellpose
+  components run in two-channel [membrane, nuclear] mode when membrane
+  markers are given.
+* The segmentation API now carries only the arguments every method
+  understands. The threshold and watershed arguments moved into
+  `basic_threshold_segmentation` and `watershed_expand_segmentation`, whose
+  behaviour is unchanged.
+* `run_benchmark` runs all seven image-derived segmenters by default. It
+  forwards the marker sidecar to segmentation and takes new
+  `--segmentation_nuclear_markers` and `--membrane_markers` arguments.
+
 ### Conformance to the OpenProblems structure
 
 * `src/api/file_score.yaml` describes what a metric component actually writes:

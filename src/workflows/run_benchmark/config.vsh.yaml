@@ -17,8 +17,8 @@ info:
     rather than by editing the workflow. `--default_methods` names one method
     per step; a method that is not a default is run only in combination with the
     defaults, so the run varies one step at a time instead of taking the full
-    cross-product. With the shipped defaults that is 10 chains rather than the
-    162 a cross-product would give, and each non-baseline chain differs from the
+    cross-product. With the shipped defaults that is 15 chains rather than the
+    567 a cross-product would give, and each non-baseline chain differs from the
     baseline in exactly one step, which is what makes a difference in a metric
     attributable.
 
@@ -105,7 +105,10 @@ argument_groups:
           `reference_segmentation` is not a default because it needs a `Labels`
           element, which the exemplar this task is developed against does not
           have. Add it when running on a dataset that ships reference masks.
-        default: [basic_threshold_segmentation, watershed_expand_segmentation]
+          The deep-learning methods (`cellpose_segmentation`,
+          `cellposev4_segmentation`, `stardist_segmentation`) run on CPU when no
+          GPU is available, which is slow on whole-slide images.
+        default: [basic_threshold_segmentation, watershed_expand_segmentation, watershed_txsim_segmentation, binning_segmentation, cellpose_segmentation, cellposev4_segmentation, stardist_segmentation]
       - name: "--aggregation_methods"
         type: string
         multiple: true
@@ -118,6 +121,30 @@ argument_groups:
         type: string
         multiple: true
         default: [no_normalization, total_log1p_normalization, arcsinh_normalization]
+
+  - name: Segmentation channels
+    description: |
+      Which image channels the image-derived segmentation methods read. Left
+      unset, they use channel 0 as the nuclear channel and no membrane channel.
+    arguments:
+      - name: "--segmentation_nuclear_markers"
+        type: string
+        direction: input
+        required: false
+        description: |
+          Comma-separated nuclear/DNA marker names to segment from, for example
+          `DNA_1`. Several names are max-projected after percentile scaling.
+          Kept separate from `--nuclear_markers`, which configures the metrics
+          and usually lists every DNA cycle, so setting that one does not
+          silently change what the baseline segments.
+      - name: "--membrane_markers"
+        type: string
+        direction: input
+        required: false
+        description: |
+          Comma-separated membrane/cytoplasm marker names, for example
+          `ECAD,CD45`. Used by the Cellpose methods for whole-cell masks;
+          nuclear-only methods ignore it.
 
   - name: Method parameters
     arguments:
@@ -189,6 +216,11 @@ dependencies:
   - name: methods_proteomics_segmentation/basic_threshold_segmentation
   - name: methods_proteomics_segmentation/watershed_expand_segmentation
   - name: methods_proteomics_segmentation/reference_segmentation
+  - name: methods_proteomics_segmentation/watershed_txsim_segmentation
+  - name: methods_proteomics_segmentation/binning_segmentation
+  - name: methods_proteomics_segmentation/cellpose_segmentation
+  - name: methods_proteomics_segmentation/cellposev4_segmentation
+  - name: methods_proteomics_segmentation/stardist_segmentation
   - name: methods_protein_aggregation/mean_intensity_aggregation
   - name: methods_protein_aggregation/sum_intensity_aggregation
   - name: methods_protein_aggregation/median_intensity_aggregation
