@@ -1,0 +1,146 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: watershed_txsim_segmentation
+label: "Watershed segmentation (txsim)"
+summary: "CLAHE, local Otsu and distance-transform watershed on the nuclear channel"
+description: |
+  Classical nuclear segmentation as used by the `watershed` component of
+  openproblems-bio/task_ist_preprocessing:
+
+    intensity normalization -> contrast adjustment (CLAHE) -> blur ->
+    local Otsu threshold -> remove small objects / fill small holes ->
+    distance transform -> local maxima as markers -> marker-controlled
+    watershed (with watershed lines) -> drop cells dimmer than a fraction of
+    their local background.
+
+  The pipeline from `txsim.preprocessing.segment_watershed` (theislab/txsim,
+  MIT) is inlined so the component needs only numpy, scipy and scikit-image
+  rather than txsim, squidpy and rasterio. Defaults match the IST component.
+
+  Differences from the IST version: the nuclear channel is chosen by marker
+  name or index instead of always `image[0]`. Corrected proteomics images are
+  float rather than unsigned integer, so the channel is clipped at zero and
+  rescaled to [0, 1] before processing. The labels are renumbered to a gapless
+  1..n range.
+
+  It overlaps with `watershed_expand_segmentation`. This one has no label
+  expansion, so it yields nuclear rather than approximate whole-cell masks.
+links:
+  documentation: "https://github.com/openproblems-bio/task_ist_preprocessing"
+  repository: "https://github.com/theislab/txsim"
+references:
+  doi: "10.1109/34.87344"
+
+arguments:
+  - name: --normalize_func
+    type: string
+    default: "gamma"
+    description: "Intensity normalization: gamma, log, sigmoid or none."
+  - name: --normalize_gamma
+    type: double
+    default: 1
+  - name: --normalize_gain
+    type: double
+    default: 1
+  - name: --normalize_inv
+    type: boolean
+    default: false
+  - name: --normalize_cutoff
+    type: double
+    default: 0.5
+  - name: --contrast_adjustment_func
+    type: string
+    default: "equalize_adapthist"
+    description: "Contrast adjustment: equalize_adapthist (CLAHE), equalize_hist, rescale_intensity or none."
+  - name: --contrast_adjustment_kernel_size
+    type: integer
+    required: false
+    description: "CLAHE kernel size in pixels. If unset, 1/8 of the image size along each axis."
+  - name: --contrast_adjustment_clip_limit
+    type: double
+    default: 0.01
+  - name: --contrast_adjustment_nbins
+    type: integer
+    default: 256
+  - name: --blur_func
+    type: string
+    default: "gaussian"
+    description: "Smoothing filter: gaussian, median or none."
+  - name: --blur_sigma
+    type: double
+    default: 1
+  - name: --blur_mode
+    type: string
+    default: "nearest"
+  - name: --blur_cval
+    type: double
+    default: 0.0
+  - name: --blur_truncate
+    type: double
+    default: 4.0
+  - name: --threshold_func
+    type: string
+    default: "local_otsu"
+    description: "Foreground threshold: local_otsu, otsu or triangle."
+  - name: --threshold_nbins
+    type: integer
+    default: 256
+  - name: --threshold_footprint
+    type: string
+    default: "square"
+    description: "Footprint shape for local_otsu: square, disk, diamond or star."
+  - name: --threshold_footprint_size
+    type: integer
+    default: 50
+  - name: --min_size
+    type: integer
+    default: 64
+    description: "Foreground objects smaller than this (pixels) are removed before the watershed. `post_processing_min_size_1` in the IST component."
+  - name: --hole_area_threshold
+    type: integer
+    default: 64
+    description: "Holes smaller than this (pixels) are filled before the watershed. `post_processing_area_threshold_2` in the IST component."
+  - name: --connectivity
+    type: integer
+    default: 1
+    description: "Pixel connectivity for small-object and hole removal."
+  - name: --local_maxima_min_distance
+    type: integer
+    default: 5
+    description: "Minimum distance between watershed markers (distance-transform peaks)."
+  - name: --watershed_compactness
+    type: double
+    default: 0.0
+    description: "0.0 is the standard marker-controlled watershed. Higher values (1e-3 to 1e-1) give compact watershed with rounder basins."
+  - name: --bg_intensity_filter_bg_factor
+    type: double
+    default: 0.3
+    description: "Cells whose mean intensity is below this factor times their local background mean are removed. Set to 0 to disable."
+  - name: --bg_intensity_filter_window_size
+    type: integer
+    default: 1000
+  - name: --bg_intensity_filter_bg_size
+    type: integer
+    default: 2000
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/segmentation_utils.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "numpy"
+          - "scipy"
+          - "scikit-image"
+  - type: native
+
+runners:
+  - type: executable
+  - type: nextflow
+    directives:
+      label: [ hightime, midcpu, midmem ]

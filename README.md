@@ -99,8 +99,8 @@ than guessing for an unknown panel.
 One invocation runs many method chains, not one. `--default_methods` names the
 baseline — one method per step — and a method that is not a default is only ever
 combined with the defaults, so each non-baseline chain differs from the baseline
-in exactly one step. With the shipped defaults that is 10 chains rather than the
-162 a cross-product would give, and it is what makes a difference in a metric
+in exactly one step. With the shipped defaults that is 15 chains rather than the
+567 a cross-product would give, and it is what makes a difference in a metric
 attributable to a single choice. Per-method parameters come from the component
 defaults or from a YAML of parameter sets and sweeps.
 

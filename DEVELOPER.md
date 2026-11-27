@@ -236,8 +236,8 @@ builds it. See **Data availability** in [README.md](README.md).
 One invocation runs many chains, not one. `--default_methods` names the
 baseline - one method per step - and a method that is not a default is only
 ever combined with the defaults, so each non-baseline chain differs from the
-baseline in exactly one step. With the shipped defaults that is 10 chains
-rather than the 162 a cross-product would give, and it is what makes a
+baseline in exactly one step. With the shipped defaults that is 15 chains
+rather than the 567 a cross-product would give, and it is what makes a
 difference in a metric attributable to a single choice.
 
 To restrict a run, pass the step's list:

@@ -101,6 +101,11 @@ workflow run_wf {
   segm_methods = [
     basic_threshold_segmentation,
     watershed_expand_segmentation,
+    watershed_txsim_segmentation,
+    binning_segmentation,
+    cellpose_segmentation,
+    cellposev4_segmentation,
+    stardist_segmentation,
     reference_segmentation
   ]
 
@@ -121,6 +126,14 @@ workflow run_wf {
           }
         } else {
           args.input_image = state.output_image
+          // marker names let methods pick channels by name, not index
+          args.input_markers = state.output_markers
+          if (state.segmentation_nuclear_markers) {
+            args.nuclear_markers = state.segmentation_nuclear_markers
+          }
+          if (state.membrane_markers) {
+            args.membrane_markers = state.membrane_markers
+          }
         }
         args + state.current_method_args
       },

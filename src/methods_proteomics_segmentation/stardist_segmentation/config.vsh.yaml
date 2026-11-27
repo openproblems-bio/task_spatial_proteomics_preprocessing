@@ -1,0 +1,93 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: stardist_segmentation
+label: "StarDist segmentation"
+summary: "Star-convex polygon nuclei detection with a pretrained StarDist2D model"
+description: |
+  StarDist predicts, for every pixel, an object probability and the distances
+  to the object boundary along a fixed set of rays, then keeps the
+  non-overlapping star-convex polygons by non-maximum suppression.
+
+  Ported from the `stardist` component of
+  openproblems-bio/task_ist_preprocessing, including its big-image strategy:
+  single-pass `predict_instances` up to 4096 px, and tiled
+  `predict_instances_big` with self-healing `min_overlap` above that. The
+  channel is the nuclear channel, chosen by marker name or index, rather than
+  `image[0]`.
+
+  StarDist segments nuclei only. `--membrane_markers` is ignored, and the masks
+  are nuclear; use a downstream expansion to approximate whole cells.
+links:
+  documentation: "https://github.com/stardist/stardist"
+  repository: "https://github.com/stardist/stardist"
+references:
+  doi: "10.1007/978-3-030-00934-2_30"
+
+arguments:
+  - name: --model
+    type: string
+    default: "2D_versatile_fluo"
+    description: >-
+      Pretrained StarDist2D model loaded via StarDist2D.from_pretrained.
+      Fluorescence models: "2D_versatile_fluo" (default) and "2D_paper_dsb2018".
+      "2D_versatile_he" is a brightfield H&E RGB model and does not apply here.
+  - name: --prob_thresh
+    type: double
+    required: false
+    description: >-
+      Object probability threshold. If unset, the model's optimized value is used
+      (0.479071 for 2D_versatile_fluo). Lower values detect more and dimmer nuclei.
+  - name: --nms_thresh
+    type: double
+    required: false
+    description: >-
+      Non-maximum-suppression IoU threshold. If unset, the model's optimized value
+      is used (0.3 for 2D_versatile_fluo). Lower values suppress overlapping
+      candidates more aggressively.
+  - name: --scale
+    type: double
+    required: false
+    description: >-
+      Isotropic factor the image is rescaled by before prediction and undone
+      afterwards. If unset, no rescaling. Use it to match nucleus size to the
+      model's training data: >1 upscales small nuclei.
+  - name: --max_object_diameter
+    type: integer
+    required: false
+    description: >-
+      Upper bound (original pixels) on the largest object, used as
+      predict_instances_big's `min_overlap` for images larger than 4096 px.
+      Defaults to 192 and is doubled automatically on demand. A robustness knob,
+      not a quality knob.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/segmentation_utils.py
+
+engines:
+  # On macOS the tensorflow install fails; develop in a conda env instead.
+  - type: docker
+    image: openproblems/base_tensorflow_nvidia:1
+    setup:
+      - type: python
+        pypi:
+          # Pins copied from task_ist_preprocessing: TF>=2.18 allows numpy>=2,
+          # and tf_keras must match the TF version for csbdeep/stardist.
+          - stardist
+          - tensorflow==2.18.0
+          - tf_keras==2.18.0
+          - "numpy>=2.0.0,<2.2.0"
+          - scipy<1.15.0
+          - scikit-image
+      # Pre-download the fluorescence models so runtime tasks (and CI without
+      # network access) do not fetch weights from GitHub.
+      - type: python
+        script: from stardist.models import StarDist2D; [StarDist2D.from_pretrained(m) for m in ['2D_versatile_fluo', '2D_paper_dsb2018']]
+  - type: native
+
+runners:
+  - type: executable
+  - type: nextflow
+    directives:
+      label: [ hightime, midcpu, highmem, gpu ]

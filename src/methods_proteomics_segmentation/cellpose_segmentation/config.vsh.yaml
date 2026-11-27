@@ -1,0 +1,98 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: cellpose_segmentation
+label: "Cellpose segmentation"
+summary: "Generalist flow-based cell segmentation with Cellpose 3 (cyto, cyto2, cyto3, nuclei)"
+description: |
+  Cellpose predicts, for every pixel, a vector pointing to the centre of its
+  cell and a cell probability. Following the flows groups pixels into masks.
+
+  Ported from the `cellpose` component of openproblems-bio/task_ist_preprocessing
+  (cellpose<4). The IST component segments the first image channel in
+  grayscale mode. Here the channels come from the proteomics image:
+
+  - With `--membrane_markers`, Cellpose runs in two-channel mode on
+    [membrane, nuclear] (`channels=[1, 2]`). This is the intended use of the
+    `cyto*` models and gives whole-cell masks.
+  - Without them, it runs in grayscale mode on the nuclear channel
+    (`channels=[0, 0]`), as in IST. Pair this with `--model_type nuclei`
+    for nuclear masks. `--model_type nuclei` always uses this mode and
+    ignores `--membrane_markers`.
+
+  The pretrained weights for all four built-in models are downloaded into the
+  image at build time so tasks never fetch them at runtime.
+links:
+  documentation: "https://cellpose.readthedocs.io/en/v3.1.1.1/"
+  repository: "https://github.com/mouseland/cellpose"
+references:
+  doi: "10.1038/s41592-020-01018-x"
+
+arguments:
+  - name: --model_type
+    type: string
+    default: "cyto"
+    description: "Built-in Cellpose model: cyto, cyto2, cyto3 or nuclei."
+  - name: --diameter
+    type: double
+    default: 30.0
+    description: "Expected cell diameter in pixels. Set to 0 to let the size model estimate it."
+  - name: --batch_size
+    type: integer
+    default: 8
+  - name: --resample
+    type: boolean
+    default: true
+  - name: --normalize
+    type: boolean
+    default: true
+  - name: --invert
+    type: boolean
+    default: false
+  - name: --augment
+    type: boolean
+    default: false
+  - name: --tile_overlap
+    type: double
+    default: 0.1
+  - name: --flow_threshold
+    type: double
+    default: 0.4
+  - name: --cellprob_threshold
+    type: double
+    default: 0.0
+  - name: --min_size
+    type: integer
+    default: 15
+  - name: --niter
+    type: integer
+    default: 0
+    description: |
+      Number of flow-dynamics iterations. 0 lets Cellpose set it in proportion
+      to the diameter. Lower values (e.g. 50) speed up the CPU path.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/segmentation_utils.py
+
+engines:
+  - type: docker
+    image: openproblems/base_pytorch_nvidia:1
+    setup:
+      - type: python
+        pypi:
+          - "cellpose<4.0.0"
+          - "scikit-image"
+      # Pre-download the pretrained weights and size models (~/.cellpose) so
+      # runtime tasks never hit the Cellpose model server, which intermittently
+      # returns 504s when several tasks fetch weights concurrently.
+      - type: docker
+        run:
+          - "python -c \"from cellpose import models; [models.Cellpose(gpu=False, model_type=m) for m in ['cyto','nuclei','cyto2','cyto3']]\""
+  - type: native
+
+runners:
+  - type: executable
+  - type: nextflow
+    directives:
+      label: [ midtime, midcpu, highmem, gpuhighmem ]

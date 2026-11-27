@@ -1,0 +1,49 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: binning_segmentation
+label: "Binning segmentation"
+summary: "Segment the image into equal square bins, ignoring its content"
+description: |
+  Tiles the image into square pseudo-cells of `--bin_size` pixels, row-major,
+  without looking at any channel. It serves as a baseline of a poor
+  segmentation: any method that does not clearly beat it on the segmentation
+  metrics is not using the image.
+
+  Ported from the `binning` component of
+  openproblems-bio/task_ist_preprocessing (which calls
+  `txsim.preprocessing.segment_binning`); the logic is inlined so the component
+  does not depend on txsim.
+links:
+  documentation: "https://github.com/openproblems-bio/task_ist_preprocessing"
+  repository: "https://github.com/openproblems-bio/task_ist_preprocessing"
+references:
+  doi: "10.1101/2023.02.13.528102"
+
+arguments:
+  - name: --bin_size
+    type: integer
+    default: 30
+    description: |
+      Edge length of each square bin in pixels of the input image. Bins on the
+      bottom and right edges are cropped by the image border.
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/segmentation_utils.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "numpy"
+          - "scikit-image"
+  - type: native
+
+runners:
+  - type: executable
+  - type: nextflow
+    directives:
+      label: [ lowtime, lowcpu, lowmem ]

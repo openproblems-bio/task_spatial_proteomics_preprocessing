@@ -8,9 +8,30 @@ description: |
   It selects a nuclear marker channel, thresholds it using a configurable intensity quantile,
   removes small objects, and converts connected components into cell labels.
 
+arguments:
+  - name: "--threshold_method"
+    type: string
+    direction: input
+    required: false
+    default: "quantile"
+    description: "Strategy used to threshold the nuclear channel. One of quantile or otsu."
+  - name: "--threshold_quantile"
+    type: double
+    direction: input
+    required: false
+    default: 0.90
+    description: "Quantile used to threshold the nuclear channel."
+  - name: "--min_area"
+    type: integer
+    direction: input
+    required: false
+    default: 30
+    description: "Minimum object size in pixels."
+
 resources:
   - type: python_script
     path: script.py
+  - path: /src/utils/segmentation_utils.py
 
 engines:
   - type: docker

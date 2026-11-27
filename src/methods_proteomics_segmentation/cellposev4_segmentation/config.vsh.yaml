@@ -1,0 +1,77 @@
+__merge__: /src/api/comp_method_proteomics_segmentation.yaml
+
+name: cellposev4_segmentation
+label: "Cellpose-SAM segmentation"
+summary: "Cell segmentation with Cellpose 4 and its SAM-backbone generalist model (cpsam)"
+description: |
+  Cellpose 4 (cellpose>=4.0.0) with the built-in `cpsam` model, a Cellpose
+  flow head on a Segment Anything encoder. It is trained to be robust to
+  channel order and imaging modality, and takes up to three input channels.
+
+  Ported from the `cellposev4` component of
+  openproblems-bio/task_ist_preprocessing, keeping its speed-oriented defaults
+  (`flow_threshold=0`, `niter=10`, `resample=false`; other settings use the
+  Cellpose defaults). The IST component
+  segments the first image channel. Here the input is [membrane, nuclear] when
+  `--membrane_markers` is given, and the nuclear channel alone otherwise.
+
+  The `cpsam` weights are released under CC-BY-NC 4.0.
+links:
+  documentation: "https://cellpose.readthedocs.io/en/latest/"
+  repository: "https://github.com/mouseland/cellpose"
+references:
+  doi:
+    # Cellpose-SAM (cpsam): the model this component actually runs
+    - "10.1101/2025.04.28.651001"
+    # Original Cellpose: the flow-dynamics framework it builds on
+    - "10.1038/s41592-020-01018-x"
+
+arguments:
+  - name: --diameter
+    type: double
+    default: 30.0
+    description: "Cell diameter in pixels. Images are rescaled so cells are ~30 px. Set to 0 to skip rescaling."
+  - name: --flow_threshold
+    type: double
+    default: 0.0
+    description: "Flow error threshold. 0 skips the flow quality check for faster execution."
+  - name: --cellprob_threshold
+    type: double
+    default: 0.0
+    description: "Cell probability threshold (network output ~-6 to 6). Lower to recover dimmer cells; raise to drop detections in dim regions."
+  - name: --niter
+    type: integer
+    default: 10
+    description: "Number of iterations for dynamics. Lower values are faster but less accurate."
+  - name: --min_size
+    type: integer
+    default: -1
+    description: "Minimum number of pixels per mask. -1 skips small-mask removal."
+  - name: --resample
+    type: boolean
+    default: false
+    description: "Whether to run dynamics at original image size. Disabling is faster."
+
+resources:
+  - type: python_script
+    path: script.py
+  - path: /src/utils/segmentation_utils.py
+
+engines:
+  - type: docker
+    image: openproblems/base_pytorch_nvidia:1
+    setup:
+      - type: python
+        pypi:
+          - "cellpose>=4.0.0"
+          - "scikit-image"
+      # Pre-download the cpsam weights so runtime tasks do not fetch them.
+      - type: python
+        script: from cellpose.models import CellposeModel; model = CellposeModel()
+  - type: native
+
+runners:
+  - type: executable
+  - type: nextflow
+    directives:
+      label: [ midtime, midcpu, highmem, gpuhighmem ]
