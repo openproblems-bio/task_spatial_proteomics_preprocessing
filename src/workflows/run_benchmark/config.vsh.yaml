@@ -117,7 +117,7 @@ argument_groups:
       - name: "--normalization_methods"
         type: string
         multiple: true
-        default: [no_normalization, total_log1p_normalization, arcsinh_normalization]
+        default: [no_normalization, total_log1p_normalization, arcsinh_normalization, clr_normalization]
 
   - name: Method parameters
     arguments:
@@ -198,6 +198,7 @@ dependencies:
   - name: methods_proteomics_normalization/no_normalization
   - name: methods_proteomics_normalization/total_log1p_normalization
   - name: methods_proteomics_normalization/arcsinh_normalization
+  - name: methods_proteomics_normalization/clr_normalization
   - name: metrics_proteomics/basic
   - name: metrics_proteomics/marker_distribution
   - name: metrics_proteomics/normalization_diagnostics

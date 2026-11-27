@@ -16,6 +16,13 @@ carried across.
 * Six metric families in `metrics_proteomics`, wrapping
   [`sprotmetrics`](https://github.com/theislab/sprotmetrics) `0.1.0`.
 
+### New methods
+
+* `methods_proteomics_normalization/clr_normalization`: per-cell centred
+  log-ratio, `log1p(x / exp(mean(log1p(x))))`, as in Seurat's CLR for
+  antibody-derived tags. Part of `run_benchmark`'s default
+  `--normalization_methods`, and covered by the shared normalization test.
+
 ### Conformance to the OpenProblems structure
 
 * `src/api/file_score.yaml` describes what a metric component actually writes:

@@ -194,7 +194,8 @@ workflow run_wf {
   norm_methods = [
     no_normalization,
     total_log1p_normalization,
-    arcsinh_normalization
+    arcsinh_normalization,
+    clr_normalization
   ]
 
   norm_ch = qc_ch
