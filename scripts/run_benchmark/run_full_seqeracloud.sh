@@ -6,11 +6,11 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 # ensure that the command below is run from the root of the repository
 cd "$REPO_ROOT"
 
-# remove this when you have updated the script for your task
-echo "TODO: update this script to fit your task."
-echo "  Step 1: replace 'task_spatial_proteomics_preprocessing' with the name of the task in the commands below."
-echo "  Step 2: update the rename keys to match the run_benchmark workflow inputs."
-echo "  Step 3: remove this message."
+# This needs s3://openproblems-data/resources/task_spatial_proteomics_preprocessing/,
+# which has not been populated yet - nothing has been uploaded for this task. Until
+# it is, run scripts/run_benchmark/run_full_local.sh against a locally built zarr.
+echo "TODO: upload the dataset before using this script."
+echo "  See the test_resources note in _viash.yaml."
 exit 1
 
 set -e
@@ -18,11 +18,14 @@ set -e
 # generate a unique id
 RUN_ID="run_$(date +%Y-%m-%d_%H-%M-%S)"
 publish_dir="s3://openproblems-data/resources/task_spatial_proteomics_preprocessing/results/${RUN_ID}"
+resources_s3=s3://openproblems-data/resources/task_spatial_proteomics_preprocessing
 
 # write the parameters to file
 cat > /tmp/params.yaml << HERE
-input_states: s3://openproblems-data/resources/task_spatial_proteomics_preprocessing/datasets/**/state.yaml
-rename_keys: 'input_train:output_train;input_test:output_test;input_solution:output_solution'
+id: exemplar_001
+input_zarr: $resources_s3/datasets/exemplar_001/dataset.zarr
+nuclear_markers: "DNA_6,DNA_7,DNA_8"
+exclusive_pairs: "ECAD:CD45,ECAD:CD11B,SMA:CD45"
 output_state: "state.yaml"
 publish_dir: "$publish_dir"
 HERE
@@ -34,6 +37,5 @@ tw launch https://github.com/openproblems-bio/task_spatial_proteomics_preprocess
   --workspace 53907369739130 \
   --compute-env 6TeIFgV5OY4pJCk8I0bfOh \
   --params-file /tmp/params.yaml \
-  --entry-name auto \
   --config common/nextflow_helpers/labels_tw.config \
   --labels task_spatial_proteomics_preprocessing,full

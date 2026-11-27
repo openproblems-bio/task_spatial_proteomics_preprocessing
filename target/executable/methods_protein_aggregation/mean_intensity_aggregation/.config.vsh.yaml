@@ -56,6 +56,8 @@ argument_groups:
     name: "--output"
     description: "Output AnnData file containing the cell-by-protein intensity matrix."
     info: null
+    example:
+    - "cell_by_protein.h5ad"
     must_exist: true
     create_parent: true
     required: true
@@ -95,6 +97,29 @@ runners:
 - type: "executable"
   id: "executable"
   docker_setup_strategy: "ifneedbepullelsecachedbuild"
+- type: "nextflow"
+  id: "nextflow"
+  directives:
+    tag: "$id"
+  auto:
+    simplifyInput: true
+    simplifyOutput: false
+    transcript: false
+    publish: false
+  config:
+    labels:
+      lowmem: "memory = 20.Gb"
+      midmem: "memory = 50.Gb"
+      highmem: "memory = 100.Gb"
+      lowcpu: "cpus = 5"
+      midcpu: "cpus = 15"
+      highcpu: "cpus = 30"
+      lowtime: "time = 1.h"
+      midtime: "time = 4.h"
+      hightime: "time = 8.h"
+      veryhightime: "time = 24.h"
+  debug: false
+  container: "docker"
 engines:
 - type: "docker"
   id: "docker"
@@ -120,7 +145,7 @@ build_info:
   output: "target/executable/methods_protein_aggregation/mean_intensity_aggregation"
   executable: "target/executable/methods_protein_aggregation/mean_intensity_aggregation/mean_intensity_aggregation"
   viash_version: "0.9.7"
-  git_commit: "7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+  git_commit: "d28203004b6da14740dda7fd81f1424a9da28bd8"
   git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
 package_config:
   name: "task_spatial_proteomics_preprocessing"

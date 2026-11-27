@@ -449,9 +449,9 @@ RUN pip install --upgrade pip && \
   pip install --upgrade --no-cache-dir "sprotmetrics==0.1.0" "anndata>=0.10.0" "zarr<3.0.0"
 
 LABEL org.opencontainers.image.description="Companion container for running component metrics_proteomics normalization_diagnostics"
-LABEL org.opencontainers.image.created="2026-11-27T08:51:23Z"
+LABEL org.opencontainers.image.created="2026-11-27T11:32:37Z"
 LABEL org.opencontainers.image.source="https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
-LABEL org.opencontainers.image.revision="7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+LABEL org.opencontainers.image.revision="d28203004b6da14740dda7fd81f1424a9da28bd8"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -604,6 +604,8 @@ function ViashHelp {
   echo ""
   echo "    --output"
   echo "        type: file, required parameter, output, file must exist"
+  echo "        example:"
+  echo "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/score.h5ad"
   echo "        Output AnnData file with uns['metric_ids'] and uns['metric_values']."
   echo ""
   echo "Viash built in Computational Requirements:"

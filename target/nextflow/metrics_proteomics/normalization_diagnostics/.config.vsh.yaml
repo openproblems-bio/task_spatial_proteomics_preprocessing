@@ -1,0 +1,322 @@
+name: "normalization_diagnostics"
+namespace: "metrics_proteomics"
+version: "build_main"
+argument_groups:
+- name: "Arguments"
+  arguments:
+  - type: "file"
+    name: "--input"
+    description: "Input AnnData file with layers['counts'] and preferably layers['normalized']."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--normalized_layer"
+    description: "Layer containing normalized values. If missing, X is used as fallback."
+    info: null
+    default:
+    - "normalized"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "string"
+    name: "--raw_layer"
+    description: "Layer containing raw values. If missing, X is used as fallback."
+    info: null
+    default:
+    - "counts"
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--max_cells"
+    description: "Maximum number of cells used for rank-preservation diagnostics.\
+      \ Use 0 to disable subsampling."
+    info: null
+    default:
+    - 5000
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--random_state"
+    description: "Random seed used for subsampling."
+    info: null
+    default:
+    - 0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--output"
+    label: "Score"
+    summary: "The metric values one metric component computed for one preprocessing\
+      \ chain."
+    description: "Output AnnData file with uns['metric_ids'] and uns['metric_values']."
+    info:
+      format:
+        type: "h5ad"
+        uns:
+        - type: "string"
+          name: "metric_ids"
+          description: "One or more unique metric identifiers."
+          multiple: true
+          required: true
+        - type: "double"
+          name: "metric_values"
+          description: "The metric values obtained for the given prediction. Must\
+            \ be of the\nsame length as `metric_ids`. A metric whose configuration\
+            \ is absent\nfor the panel reports NaN rather than a guess.\n"
+          multiple: true
+          required: true
+        - type: "string"
+          name: "metric_group"
+          description: "The metric family that produced these values."
+          required: false
+    example:
+    - "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/score.h5ad"
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "output"
+    multiple: false
+    multiple_sep: ";"
+resources:
+- type: "python_script"
+  path: "script.py"
+  is_executable: true
+label: "Normalization diagnostics"
+summary: "Compute diagnostics comparing raw and normalized protein intensity matrices"
+description: "Computes metrics for assessing how normalization changes the data, including\n\
+  total-intensity coefficient of variation before and after normalization,\nper-cell\
+  \ rank preservation, and marker variance changes.\n"
+test_resources:
+- type: "python_script"
+  path: "test_metrics.py"
+  is_executable: true
+- type: "file"
+  path: "isp_fixtures.py"
+info:
+  metrics:
+  - name: "total_cv_raw"
+    label: "Spread of per-cell total intensity"
+    summary: "Coefficient of variation of per-cell summed intensity."
+    description: "Coefficient of variation of per-cell summed intensity."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "total_cv_raw_qc_pass"
+    label: "Spread of per-cell total intensity"
+    summary: "Coefficient of variation of per-cell summed intensity."
+    description: "Coefficient of variation of per-cell summed intensity."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "total_cv_normalized"
+    label: "Spread of per-cell total intensity"
+    summary: "Coefficient of variation of per-cell summed intensity."
+    description: "Coefficient of variation of per-cell summed intensity."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "total_cv_normalized_qc_pass"
+    label: "Spread of per-cell total intensity"
+    summary: "Coefficient of variation of per-cell summed intensity."
+    description: "Coefficient of variation of per-cell summed intensity."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "total_cv_ratio_norm_over_raw"
+    label: "Compression of total-intensity spread"
+    summary: "Normalized over raw coefficient of variation of per-cell totals."
+    description: "Normalized over raw coefficient of variation of per-cell totals.\n\
+      \n    Below 1 means the normalization compressed the spread in per-cell total\n\
+      \    intensity, which is what it is for."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  - name: "total_cv_ratio_norm_over_raw_qc_pass"
+    label: "Compression of total-intensity spread"
+    summary: "Normalized over raw coefficient of variation of per-cell totals."
+    description: "Normalized over raw coefficient of variation of per-cell totals.\n\
+      \n    Below 1 means the normalization compressed the spread in per-cell total\n\
+      \    intensity, which is what it is for."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: false
+  type: "metric"
+  subtype: "proteomics_normalization_diagnostics"
+  type_info:
+    label: "Proteomics normalization diagnostics"
+    summary: "Compare raw and normalized intensity matrices"
+    description: "Produces an AnnData object with normalization diagnostics stored\
+      \ in\nuns['metric_ids'] and uns['metric_values']. The metrics compare raw counts\n\
+      to the normalized representation and quantify total-intensity compression,\n\
+      rank preservation, and variance changes.\n"
+status: "enabled"
+scope:
+  image: "public"
+  target: "public"
+repositories:
+- type: "github"
+  name: "openproblems"
+  repo: "openproblems-bio/openproblems"
+  tag: "build/main"
+license: "MIT"
+links:
+  repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+  docker_registry: "ghcr.io"
+runners:
+- type: "executable"
+  id: "executable"
+  docker_setup_strategy: "ifneedbepullelsecachedbuild"
+- type: "nextflow"
+  id: "nextflow"
+  directives:
+    tag: "$id"
+  auto:
+    simplifyInput: true
+    simplifyOutput: false
+    transcript: false
+    publish: false
+  config:
+    labels:
+      lowmem: "memory = 20.Gb"
+      midmem: "memory = 50.Gb"
+      highmem: "memory = 100.Gb"
+      lowcpu: "cpus = 5"
+      midcpu: "cpus = 15"
+      highcpu: "cpus = 30"
+      lowtime: "time = 1.h"
+      midtime: "time = 4.h"
+      hightime: "time = 8.h"
+      veryhightime: "time = 24.h"
+  debug: false
+  container: "docker"
+engines:
+- type: "docker"
+  id: "docker"
+  image: "openproblems/base_python:1"
+  namespace_separator: "/"
+  setup:
+  - type: "python"
+    user: false
+    pypi:
+    - "sprotmetrics==0.1.0"
+    - "anndata>=0.10.0"
+    - "zarr<3.0.0"
+    upgrade: true
+  entrypoint: []
+  cmd: null
+- type: "native"
+  id: "native"
+build_info:
+  config: "src/metrics_proteomics/normalization_diagnostics/config.vsh.yaml"
+  runner: "nextflow"
+  engine: "docker|native"
+  output: "target/nextflow/metrics_proteomics/normalization_diagnostics"
+  executable: "target/nextflow/metrics_proteomics/normalization_diagnostics/main.nf"
+  viash_version: "0.9.7"
+  git_commit: "d28203004b6da14740dda7fd81f1424a9da28bd8"
+  git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+package_config:
+  name: "task_spatial_proteomics_preprocessing"
+  version: "build_main"
+  label: "Spatial Proteomics Preprocessing"
+  summary: "Benchmarking preprocessing workflows that turn multiplexed protein images\
+    \ into cell-by-protein matrices."
+  description: "Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC\
+    \ - produce\nmultiplexed images in which each channel is an antibody-stained protein\
+    \ marker.\nTurning those images into cell-level protein profiles takes a chain\
+    \ of\npreprocessing choices: correcting the image, segmenting cells, aggregating\n\
+    pixel intensities per cell, applying quality control, and normalizing. Each\n\
+    choice changes the cell-by-protein matrix that every downstream analysis is\n\
+    built on, there is no established consensus on which to make, and the effect\n\
+    of any single one is rarely reported in isolation.\n\nThis task benchmarks those\
+    \ steps as interchangeable modules. The input is a\nSpatialData Zarr store holding\
+    \ a multichannel image and, optionally, reference\nsegmentation labels. The output\
+    \ is a standardized cell-by-protein AnnData\nobject together with preprocessing\
+    \ quality metrics. Methods within a module\nshare an argument contract, so a run\
+    \ can swap one module while holding the\nrest fixed.\n\nThe metrics are deliberately\
+    \ reference-free wherever possible: they score a\nresult against properties the\
+    \ data must satisfy if preprocessing is correct -\nevery segmented object should\
+    \ contain nuclear signal, nuclear stains repeated\nacross imaging cycles are the\
+    \ same physical nuclei and must agree within a\ncell, markers confined to incompatible\
+    \ lineages should rarely be co-positive,\nand expression should not be explained\
+    \ by how large a cell happened to be.\nThis matters because ground-truth segmentation\
+    \ masks are unavailable for most\nreal datasets, including the public exemplar\
+    \ this task is developed against.\n\nThe task stops at preprocessing. Cell-type\
+    \ annotation and biological\ninterpretation are treated as downstream consumers\
+    \ of the output rather than\nas benchmarked steps.\n\nThe metric implementations\
+    \ live in the `sprotmetrics` package\n(https://github.com/theislab/sprotmetrics);\
+    \ the components here are the Viash\ncontracts around them.\n"
+  info:
+    image: "thumbnail.svg"
+  repositories:
+  - type: "github"
+    name: "openproblems"
+    repo: "openproblems-bio/openproblems"
+    tag: "build/main"
+  viash_version: "0.9.7"
+  source: "src"
+  target: "target"
+  config_mods:
+  - ".runners[.type == \"nextflow\"].config.labels := { lowmem : \"memory = 20.Gb\"\
+    , midmem : \"memory = 50.Gb\", highmem : \"memory = 100.Gb\", lowcpu : \"cpus\
+    \ = 5\", midcpu : \"cpus = 15\", highcpu : \"cpus = 30\", lowtime : \"time = 1.h\"\
+    , midtime : \"time = 4.h\", hightime : \"time = 8.h\", veryhightime : \"time =\
+    \ 24.h\" }\n"
+  authors:
+  - name: "Julius Stein"
+    roles:
+    - "author"
+    info:
+      github: "juliusstein77"
+  - name: "Sergio Marco Salas"
+    roles:
+    - "author"
+    - "maintainer"
+    info:
+      github: "sergiomarco25"
+  keywords:
+  - "single-cell"
+  - "openproblems"
+  - "benchmark"
+  - "spatial proteomics"
+  - "multiplexed imaging"
+  - "preprocessing"
+  license: "MIT"
+  organization: "openproblems-bio"
+  references:
+    doi:
+    - "10.1038/s41592-021-01308-y"
+  links:
+    repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+    docker_registry: "ghcr.io"
+    issue_tracker: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues"

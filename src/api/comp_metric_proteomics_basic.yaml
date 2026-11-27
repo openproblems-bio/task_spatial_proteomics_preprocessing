@@ -29,6 +29,7 @@ arguments:
     default: 0.1
     description: "Backward-compatible alias for --cov_thr."
   - name: "--output"
+    __merge__: /src/api/file_score.yaml
     type: file
     direction: output
     required: true

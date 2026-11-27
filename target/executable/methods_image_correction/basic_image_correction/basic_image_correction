@@ -449,9 +449,9 @@ RUN pip install --upgrade pip && \
   pip install --upgrade --no-cache-dir "spatialdata==0.5.0" "setuptools<81" "zarr<3.0.0" "numpy" "pandas" "xarray"
 
 LABEL org.opencontainers.image.description="Companion container for running component methods_image_correction basic_image_correction"
-LABEL org.opencontainers.image.created="2026-11-27T08:51:22Z"
+LABEL org.opencontainers.image.created="2026-11-27T11:32:38Z"
 LABEL org.opencontainers.image.source="https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
-LABEL org.opencontainers.image.revision="7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+LABEL org.opencontainers.image.revision="d28203004b6da14740dda7fd81f1424a9da28bd8"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -599,10 +599,12 @@ function ViashHelp {
   echo ""
   echo "    --output_image"
   echo "        type: file, required parameter, output, file must exist"
+  echo "        example: corrected_image.npy"
   echo "        Corrected image as numpy array in channel-y-x format."
   echo ""
   echo "    --output_markers"
   echo "        type: file, required parameter, output, file must exist"
+  echo "        example: corrected_markers.json"
   echo "        JSON file containing marker names."
   echo ""
   echo "Viash built in Computational Requirements:"

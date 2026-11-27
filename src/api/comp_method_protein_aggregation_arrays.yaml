@@ -40,6 +40,7 @@ argument_groups:
   - name: Outputs
     arguments:
       - name: "--output"
+        example: cell_by_protein.h5ad
         type: file
         direction: output
         required: true

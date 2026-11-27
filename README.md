@@ -94,8 +94,22 @@ bash src/workflows/run_benchmark/test.sh
 ```
 
 Panel-dependent metrics return `NaN` when their configuration is absent, rather
-than guessing for an unknown panel. See [DEVELOPER.md](DEVELOPER.md) for the
-component layout, how to add a method, and how to run the tests.
+than guessing for an unknown panel.
+
+One invocation runs many method chains, not one. `--default_methods` names the
+baseline — one method per step — and a method that is not a default is only ever
+combined with the defaults, so each non-baseline chain differs from the baseline
+in exactly one step. With the shipped defaults that is 10 chains rather than the
+162 a cross-product would give, and it is what makes a difference in a metric
+attributable to a single choice. Per-method parameters come from the component
+defaults or from a YAML of parameter sets and sweeps.
+
+The run publishes `score_uns.yaml` — one record per (chain, metric component),
+carrying the metric values together with the chain that produced them — next to
+the method and metric configs needed to interpret it.
+
+See [DEVELOPER.md](DEVELOPER.md) for the component layout, how to add a method,
+how to select methods and sweep parameters, and how to run the tests.
 
 ## Authors & contributors
 

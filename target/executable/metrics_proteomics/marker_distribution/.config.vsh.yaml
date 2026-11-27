@@ -68,8 +68,32 @@ argument_groups:
     multiple_sep: ";"
   - type: "file"
     name: "--output"
+    label: "Score"
+    summary: "The metric values one metric component computed for one preprocessing\
+      \ chain."
     description: "Output AnnData file with uns['metric_ids'] and uns['metric_values']."
-    info: null
+    info:
+      format:
+        type: "h5ad"
+        uns:
+        - type: "string"
+          name: "metric_ids"
+          description: "One or more unique metric identifiers."
+          multiple: true
+          required: true
+        - type: "double"
+          name: "metric_values"
+          description: "The metric values obtained for the given prediction. Must\
+            \ be of the\nsame length as `metric_ids`. A metric whose configuration\
+            \ is absent\nfor the panel reports NaN rather than a guess.\n"
+          multiple: true
+          required: true
+        - type: "string"
+          name: "metric_group"
+          description: "The metric family that produced these values."
+          required: false
+    example:
+    - "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/score.h5ad"
     must_exist: true
     create_parent: true
     required: true
@@ -254,6 +278,29 @@ runners:
 - type: "executable"
   id: "executable"
   docker_setup_strategy: "ifneedbepullelsecachedbuild"
+- type: "nextflow"
+  id: "nextflow"
+  directives:
+    tag: "$id"
+  auto:
+    simplifyInput: true
+    simplifyOutput: false
+    transcript: false
+    publish: false
+  config:
+    labels:
+      lowmem: "memory = 20.Gb"
+      midmem: "memory = 50.Gb"
+      highmem: "memory = 100.Gb"
+      lowcpu: "cpus = 5"
+      midcpu: "cpus = 15"
+      highcpu: "cpus = 30"
+      lowtime: "time = 1.h"
+      midtime: "time = 4.h"
+      hightime: "time = 8.h"
+      veryhightime: "time = 24.h"
+  debug: false
+  container: "docker"
 engines:
 - type: "docker"
   id: "docker"
@@ -278,7 +325,7 @@ build_info:
   output: "target/executable/metrics_proteomics/marker_distribution"
   executable: "target/executable/metrics_proteomics/marker_distribution/marker_distribution"
   viash_version: "0.9.7"
-  git_commit: "7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+  git_commit: "d28203004b6da14740dda7fd81f1424a9da28bd8"
   git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
 package_config:
   name: "task_spatial_proteomics_preprocessing"

@@ -1,0 +1,540 @@
+name: "signal_background"
+namespace: "metrics_proteomics"
+version: "build_main"
+argument_groups:
+- name: "Arguments"
+  arguments:
+  - type: "file"
+    name: "--input_image"
+    description: "Corrected multichannel image as a NumPy array, channels by height\
+      \ by width."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--input_labels"
+    description: "Segmentation label mask as a two-dimensional NumPy array."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--input_markers"
+    description: "JSON file with marker names, either a list or under the key markers."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--input_qc"
+    description: "Optional AnnData carrying obs['passed_QC'], used to report the QC-passing\
+      \ variants. Without it those are NaN."
+    info: null
+    must_exist: true
+    create_parent: true
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--dilation_iterations"
+    description: "How far to grow the masks when sampling proximal background, in\
+      \ pixels."
+    info: null
+    default:
+    - 3
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "double"
+    name: "--norm_percentile"
+    description: "Percentile of per-cell intensity used to normalise the signal integral."
+    info: null
+    default:
+    - 95.0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "integer"
+    name: "--random_state"
+    description: "Random seed for background sampling, which is otherwise irreproducible."
+    info: null
+    default:
+    - 0
+    required: false
+    direction: "input"
+    multiple: false
+    multiple_sep: ";"
+  - type: "file"
+    name: "--output"
+    label: "Score"
+    summary: "The metric values one metric component computed for one preprocessing\
+      \ chain."
+    description: "Output AnnData with uns['metric_ids'] and uns['metric_values']."
+    info:
+      format:
+        type: "h5ad"
+        uns:
+        - type: "string"
+          name: "metric_ids"
+          description: "One or more unique metric identifiers."
+          multiple: true
+          required: true
+        - type: "double"
+          name: "metric_values"
+          description: "The metric values obtained for the given prediction. Must\
+            \ be of the\nsame length as `metric_ids`. A metric whose configuration\
+            \ is absent\nfor the panel reports NaN rather than a guess.\n"
+          multiple: true
+          required: true
+        - type: "string"
+          name: "metric_group"
+          description: "The metric family that produced these values."
+          required: false
+    example:
+    - "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/score.h5ad"
+    must_exist: true
+    create_parent: true
+    required: true
+    direction: "output"
+    multiple: false
+    multiple_sep: ";"
+resources:
+- type: "python_script"
+  path: "script.py"
+  is_executable: true
+label: "Signal versus background metrics"
+summary: "Pixel-level scores for image correction and mask placement"
+description: "The only metrics computed from pixels rather than the aggregated matrix,\
+  \ and\nso the only ones that can see what the cell table cannot: signal that never\n\
+  made it inside a mask, and background that correction failed to remove.\n\n- `median_rel_sni`\
+  \ / `min_rel_sni` - area between the sorted per-cell\n  intensity curve and a rank-matched\
+  \ background curve, normalised by a high\n  percentile of cell intensity. The headline\
+  \ signal-to-background measure.\n  Higher is better; `min` exposes the worst marker\
+  \ in the panel.\n- `median_intracell_coverage` - among the brightest 5% of cells,\
+  \ the fraction\n  of their own pixels above threshold. Separates real staining,\
+  \ which is\n  bright *and* extensive, from punctate artefact, which is bright and\
+  \ sparse.\n  Higher is better.\n- `median_signal_to_background_ratio` - the simple\
+  \ mean-inside over\n  mean-in-ring version. Higher is better.\n- `median_cellular_specificity`\
+  \ - positive pixels inside the masks as a share\n  of positive pixels inside plus\
+  \ in the ring around them. Higher is better.\n- `median_marker_gini` - concentration\
+  \ of per-cell intensity across cells.\n  Descriptive rather than directional: high\
+  \ means a marker is restricted to\n  few cells, which is right for a lineage marker\
+  \ and wrong for a housekeeper.\n\nBackground is sampled from a ring immediately\
+  \ outside the masks, not from all\nnon-cell pixels, so the comparison stays local\
+  \ instead of being diluted by\nempty slide.\n\nAdapted from the scverse hackathon\
+  \ `sprot` prototype\n(`metrics/protein_quality_metrics.py`). Three changes were\
+  \ needed: per-cell\nstatistics are computed by `bincount` instead of masking the\
+  \ whole image once\nper cell, positivity uses an Otsu threshold instead of the `thresh=0`\
+  \ default\nthat made coverage identically 1.0, and background sampling is seeded\
+  \ so the\nresult is reproducible.\n"
+test_resources:
+- type: "python_script"
+  path: "test_signal_background.py"
+  is_executable: true
+- type: "file"
+  path: "isp_fixtures.py"
+info:
+  metrics:
+  - name: "median_rel_sni"
+    label: "Signal integral against a rank-matched background"
+    summary: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve."
+    description: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve.\n\n    Normalised by a high percentile of cell intensity\
+      \ so markers of different\n    brightness are comparable. The headline signal-to-background\
+      \ measure."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: "-.inf"
+    max: "+.inf"
+    maximize: true
+  - name: "median_rel_sni_qc_pass"
+    label: "Signal integral against a rank-matched background"
+    summary: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve."
+    description: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve.\n\n    Normalised by a high percentile of cell intensity\
+      \ so markers of different\n    brightness are comparable. The headline signal-to-background\
+      \ measure."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: "-.inf"
+    max: "+.inf"
+    maximize: true
+  - name: "min_rel_sni"
+    label: "Signal integral against a rank-matched background"
+    summary: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve."
+    description: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve.\n\n    Normalised by a high percentile of cell intensity\
+      \ so markers of different\n    brightness are comparable. The headline signal-to-background\
+      \ measure."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: "-.inf"
+    max: "+.inf"
+    maximize: true
+  - name: "min_rel_sni_qc_pass"
+    label: "Signal integral against a rank-matched background"
+    summary: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve."
+    description: "Area between the sorted per-cell intensity curve and a rank-matched\
+      \ background curve.\n\n    Normalised by a high percentile of cell intensity\
+      \ so markers of different\n    brightness are comparable. The headline signal-to-background\
+      \ measure."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: "-.inf"
+    max: "+.inf"
+    maximize: true
+  - name: "median_intracell_coverage"
+    label: "Extent of staining within the brightest cells"
+    summary: "Fraction of its own pixels above threshold, in the most-covered cells,\
+      \ per marker."
+    description: "Fraction of its own pixels above threshold, in the most-covered\
+      \ cells, per marker.\n\n    Separates real staining, which is bright *and* extensive,\
+      \ from punctate\n    artefact, which is bright and sparse."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "median_intracell_coverage_qc_pass"
+    label: "Extent of staining within the brightest cells"
+    summary: "Fraction of its own pixels above threshold, in the most-covered cells,\
+      \ per marker."
+    description: "Fraction of its own pixels above threshold, in the most-covered\
+      \ cells, per marker.\n\n    Separates real staining, which is bright *and* extensive,\
+      \ from punctate\n    artefact, which is bright and sparse."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "median_signal_to_background_ratio"
+    label: "Mean inside masks over mean in the ring"
+    summary: "Mean intensity inside the masks over mean intensity in the surrounding\
+      \ ring."
+    description: "Mean intensity inside the masks over mean intensity in the surrounding\
+      \ ring.\n\n    Needs no pseudo-cell sampling, so it survives the cases where\
+      \ the\n    rank-matched curve of :func:`rel_sni` cannot be built.\n\n    The\
+      \ division is carried out in the image's own dtype. Multiplexed images are\n\
+      \    stored float32, and under NumPy's weak scalar promotion the benchmark's\n\
+      \    ``np.mean(image[c][labels > 0]) / ring_mean`` stays float32; doing it in\n\
+      \    float64 is marginally more accurate but shifts the result in the eighth\n\
+      \    significant figure, which would silently move published numbers."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "median_signal_to_background_ratio_qc_pass"
+    label: "Mean inside masks over mean in the ring"
+    summary: "Mean intensity inside the masks over mean intensity in the surrounding\
+      \ ring."
+    description: "Mean intensity inside the masks over mean intensity in the surrounding\
+      \ ring.\n\n    Needs no pseudo-cell sampling, so it survives the cases where\
+      \ the\n    rank-matched curve of :func:`rel_sni` cannot be built.\n\n    The\
+      \ division is carried out in the image's own dtype. Multiplexed images are\n\
+      \    stored float32, and under NumPy's weak scalar promotion the benchmark's\n\
+      \    ``np.mean(image[c][labels > 0]) / ring_mean`` stays float32; doing it in\n\
+      \    float64 is marginally more accurate but shifts the result in the eighth\n\
+      \    significant figure, which would silently move published numbers."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: "+.inf"
+    maximize: true
+  - name: "median_cellular_specificity"
+    label: "Share of positive pixels falling inside masks"
+    summary: "Positive pixels inside the masks, over positive pixels inside plus in\
+      \ the ring."
+    description: "Positive pixels inside the masks, over positive pixels inside plus\
+      \ in the ring."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "median_cellular_specificity_qc_pass"
+    label: "Share of positive pixels falling inside masks"
+    summary: "Positive pixels inside the masks, over positive pixels inside plus in\
+      \ the ring."
+    description: "Positive pixels inside the masks, over positive pixels inside plus\
+      \ in the ring."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "nuclear_signal_containment"
+    label: "Nuclear signal falling inside any mask"
+    summary: "Fraction of total nuclear-channel signal that falls inside a mask."
+    description: "Fraction of total nuclear-channel signal that falls inside a mask.\n\
+      \n    The only way to see cells the segmentation missed entirely: every metric\n\
+      \    computed from the cell table is blind to them, because a missed cell is\n\
+      \    simply absent from the table."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "nuclear_signal_containment_qc_pass"
+    label: "Nuclear signal falling inside any mask"
+    summary: "Fraction of total nuclear-channel signal that falls inside a mask."
+    description: "Fraction of total nuclear-channel signal that falls inside a mask.\n\
+      \n    The only way to see cells the segmentation missed entirely: every metric\n\
+      \    computed from the cell table is blind to them, because a missed cell is\n\
+      \    simply absent from the table."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: true
+  - name: "median_signal_drop_on_aggregation"
+    label: "Positive cells aggregated away to zero"
+    summary: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker."
+    description: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker.\n\n    Aggregation is the axis the benchmark covers worst,\
+      \ and this asks the\n    question directly: did summarising the pixels throw\
+      \ the signal away?\n\n    Rows of `table` are aligned to label ids through ``obs[cell_id_key]``\
+      \ when\n    given, else through integer-castable ``obs_names``, else positionally\
+      \ -- and\n    a positional fallback whose length disagrees raises rather than\
+      \ scoring a\n    silently mismatched join."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "median_signal_drop_on_aggregation_qc_pass"
+    label: "Positive cells aggregated away to zero"
+    summary: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker."
+    description: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker.\n\n    Aggregation is the axis the benchmark covers worst,\
+      \ and this asks the\n    question directly: did summarising the pixels throw\
+      \ the signal away?\n\n    Rows of `table` are aligned to label ids through ``obs[cell_id_key]``\
+      \ when\n    given, else through integer-castable ``obs_names``, else positionally\
+      \ -- and\n    a positional fallback whose length disagrees raises rather than\
+      \ scoring a\n    silently mismatched join."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "max_signal_drop_on_aggregation"
+    label: "Positive cells aggregated away to zero"
+    summary: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker."
+    description: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker.\n\n    Aggregation is the axis the benchmark covers worst,\
+      \ and this asks the\n    question directly: did summarising the pixels throw\
+      \ the signal away?\n\n    Rows of `table` are aligned to label ids through ``obs[cell_id_key]``\
+      \ when\n    given, else through integer-castable ``obs_names``, else positionally\
+      \ -- and\n    a positional fallback whose length disagrees raises rather than\
+      \ scoring a\n    silently mismatched join."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  - name: "max_signal_drop_on_aggregation_qc_pass"
+    label: "Positive cells aggregated away to zero"
+    summary: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker."
+    description: "Cells holding positive pixels whose aggregated value is nonetheless\
+      \ zero, per marker.\n\n    Aggregation is the axis the benchmark covers worst,\
+      \ and this asks the\n    question directly: did summarising the pixels throw\
+      \ the signal away?\n\n    Rows of `table` are aligned to label ids through ``obs[cell_id_key]``\
+      \ when\n    given, else through integer-castable ``obs_names``, else positionally\
+      \ -- and\n    a positional fallback whose length disagrees raises rather than\
+      \ scoring a\n    silently mismatched join."
+    links:
+      repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+      docs: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing#readme"
+    min: 0
+    max: 1
+    maximize: false
+  type: "metric"
+  subtype: "proteomics_signal_background"
+  type_info:
+    label: "Proteomics signal-versus-background metrics"
+    summary: "Score image correction and mask placement against a local background"
+    description: "The only metrics in this benchmark computed from pixels rather than\
+      \ from\nthe aggregated matrix, and therefore the only ones that can see what\
+      \ the\ncell table cannot: how much of each marker's signal actually falls inside\n\
+      the masks, and how much of it is background that correction failed to\nremove.\n\
+      \nBackground is sampled from a ring immediately outside the masks rather\nthan\
+      \ from all non-cell pixels, so the comparison is local and is not\ndominated\
+      \ by empty regions of the slide.\n\nAdapted from the scverse hackathon `sprot`\
+      \ prototype\n(`metrics/protein_quality_metrics.py`).\n"
+status: "enabled"
+scope:
+  image: "public"
+  target: "public"
+repositories:
+- type: "github"
+  name: "openproblems"
+  repo: "openproblems-bio/openproblems"
+  tag: "build/main"
+license: "MIT"
+links:
+  repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+  docker_registry: "ghcr.io"
+runners:
+- type: "executable"
+  id: "executable"
+  docker_setup_strategy: "ifneedbepullelsecachedbuild"
+- type: "nextflow"
+  id: "nextflow"
+  directives:
+    tag: "$id"
+  auto:
+    simplifyInput: true
+    simplifyOutput: false
+    transcript: false
+    publish: false
+  config:
+    labels:
+      lowmem: "memory = 20.Gb"
+      midmem: "memory = 50.Gb"
+      highmem: "memory = 100.Gb"
+      lowcpu: "cpus = 5"
+      midcpu: "cpus = 15"
+      highcpu: "cpus = 30"
+      lowtime: "time = 1.h"
+      midtime: "time = 4.h"
+      hightime: "time = 8.h"
+      veryhightime: "time = 24.h"
+  debug: false
+  container: "docker"
+engines:
+- type: "docker"
+  id: "docker"
+  image: "openproblems/base_python:1"
+  namespace_separator: "/"
+  setup:
+  - type: "python"
+    user: false
+    pypi:
+    - "sprotmetrics==0.1.0"
+    - "anndata>=0.10.0"
+    - "zarr<3.0.0"
+    upgrade: true
+  entrypoint: []
+  cmd: null
+- type: "native"
+  id: "native"
+build_info:
+  config: "src/metrics_proteomics/signal_background/config.vsh.yaml"
+  runner: "nextflow"
+  engine: "docker|native"
+  output: "target/nextflow/metrics_proteomics/signal_background"
+  executable: "target/nextflow/metrics_proteomics/signal_background/main.nf"
+  viash_version: "0.9.7"
+  git_commit: "d28203004b6da14740dda7fd81f1424a9da28bd8"
+  git_remote: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+package_config:
+  name: "task_spatial_proteomics_preprocessing"
+  version: "build_main"
+  label: "Spatial Proteomics Preprocessing"
+  summary: "Benchmarking preprocessing workflows that turn multiplexed protein images\
+    \ into cell-by-protein matrices."
+  description: "Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC\
+    \ - produce\nmultiplexed images in which each channel is an antibody-stained protein\
+    \ marker.\nTurning those images into cell-level protein profiles takes a chain\
+    \ of\npreprocessing choices: correcting the image, segmenting cells, aggregating\n\
+    pixel intensities per cell, applying quality control, and normalizing. Each\n\
+    choice changes the cell-by-protein matrix that every downstream analysis is\n\
+    built on, there is no established consensus on which to make, and the effect\n\
+    of any single one is rarely reported in isolation.\n\nThis task benchmarks those\
+    \ steps as interchangeable modules. The input is a\nSpatialData Zarr store holding\
+    \ a multichannel image and, optionally, reference\nsegmentation labels. The output\
+    \ is a standardized cell-by-protein AnnData\nobject together with preprocessing\
+    \ quality metrics. Methods within a module\nshare an argument contract, so a run\
+    \ can swap one module while holding the\nrest fixed.\n\nThe metrics are deliberately\
+    \ reference-free wherever possible: they score a\nresult against properties the\
+    \ data must satisfy if preprocessing is correct -\nevery segmented object should\
+    \ contain nuclear signal, nuclear stains repeated\nacross imaging cycles are the\
+    \ same physical nuclei and must agree within a\ncell, markers confined to incompatible\
+    \ lineages should rarely be co-positive,\nand expression should not be explained\
+    \ by how large a cell happened to be.\nThis matters because ground-truth segmentation\
+    \ masks are unavailable for most\nreal datasets, including the public exemplar\
+    \ this task is developed against.\n\nThe task stops at preprocessing. Cell-type\
+    \ annotation and biological\ninterpretation are treated as downstream consumers\
+    \ of the output rather than\nas benchmarked steps.\n\nThe metric implementations\
+    \ live in the `sprotmetrics` package\n(https://github.com/theislab/sprotmetrics);\
+    \ the components here are the Viash\ncontracts around them.\n"
+  info:
+    image: "thumbnail.svg"
+  repositories:
+  - type: "github"
+    name: "openproblems"
+    repo: "openproblems-bio/openproblems"
+    tag: "build/main"
+  viash_version: "0.9.7"
+  source: "src"
+  target: "target"
+  config_mods:
+  - ".runners[.type == \"nextflow\"].config.labels := { lowmem : \"memory = 20.Gb\"\
+    , midmem : \"memory = 50.Gb\", highmem : \"memory = 100.Gb\", lowcpu : \"cpus\
+    \ = 5\", midcpu : \"cpus = 15\", highcpu : \"cpus = 30\", lowtime : \"time = 1.h\"\
+    , midtime : \"time = 4.h\", hightime : \"time = 8.h\", veryhightime : \"time =\
+    \ 24.h\" }\n"
+  authors:
+  - name: "Julius Stein"
+    roles:
+    - "author"
+    info:
+      github: "juliusstein77"
+  - name: "Sergio Marco Salas"
+    roles:
+    - "author"
+    - "maintainer"
+    info:
+      github: "sergiomarco25"
+  keywords:
+  - "single-cell"
+  - "openproblems"
+  - "benchmark"
+  - "spatial proteomics"
+  - "multiplexed imaging"
+  - "preprocessing"
+  license: "MIT"
+  organization: "openproblems-bio"
+  references:
+    doi:
+    - "10.1038/s41592-021-01308-y"
+  links:
+    repository: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
+    docker_registry: "ghcr.io"
+    issue_tracker: "https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues"

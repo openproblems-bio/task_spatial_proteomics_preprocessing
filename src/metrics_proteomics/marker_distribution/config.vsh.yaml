@@ -22,6 +22,7 @@ engines:
 - type: native
 runners:
 - type: executable
+- type: nextflow
 info:
   metrics:
   - name: median_marker_zero_fraction

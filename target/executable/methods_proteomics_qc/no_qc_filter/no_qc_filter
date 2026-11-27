@@ -449,9 +449,9 @@ RUN pip install --upgrade pip && \
   pip install --upgrade --no-cache-dir "anndata>=0.10.0" "numpy" "pandas" "scipy"
 
 LABEL org.opencontainers.image.description="Companion container for running component methods_proteomics_qc no_qc_filter"
-LABEL org.opencontainers.image.created="2026-11-27T08:51:23Z"
+LABEL org.opencontainers.image.created="2026-11-27T11:32:37Z"
 LABEL org.opencontainers.image.source="https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing"
-LABEL org.opencontainers.image.revision="7316b2e16ded7bc0bd03a460c0ebfa09e6d73f90"
+LABEL org.opencontainers.image.revision="d28203004b6da14740dda7fd81f1424a9da28bd8"
 LABEL org.opencontainers.image.version="build_main"
 
 VIASHDOCKER
@@ -598,6 +598,7 @@ function ViashHelp {
   echo ""
   echo "    --output"
   echo "        type: file, required parameter, output, file must exist"
+  echo "        example: cell_by_protein_qc.h5ad"
   echo "        Output AnnData h5ad with QC annotations."
   echo ""
   echo "Viash built in Computational Requirements:"

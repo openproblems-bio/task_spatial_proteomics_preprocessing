@@ -32,11 +32,13 @@ arguments:
     default: false
     description: Whether to rescale every channel to max 1 after correction.
   - name: --output_image
+    example: corrected_image.npy
     type: file
     direction: output
     required: true
     description: Corrected image as numpy array in channel-y-x format.
   - name: --output_markers
+    example: corrected_markers.json
     type: file
     direction: output
     required: true
