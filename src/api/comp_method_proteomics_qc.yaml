@@ -39,6 +39,7 @@ arguments:
     default: 0.05
     description: "Lower total-intensity quantile used by adaptive quantile QC."
   - name: --output
+    example: cell_by_protein_qc.h5ad
     type: file
     direction: output
     required: true
