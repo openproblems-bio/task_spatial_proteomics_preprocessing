@@ -1,83 +1,83 @@
 viash_version: 0.9.7
 
-# Step 1: Change the name of the task.
-# example: task_name_of_this_task
-name: task_template
+name: task_spatial_proteomics_preprocessing
 organization: openproblems-bio
 version: dev
 
 license: MIT
-# Step 2: Add keywords to describe the task.
-keywords: [single-cell, openproblems, benchmark]
-# Step 3: Update the `task_template` to the name of the task from step 1.
+keywords: [single-cell, openproblems, benchmark, spatial proteomics, multiplexed imaging, preprocessing]
 links:
-  issue_tracker: https://github.com/openproblems-bio/task_template/issues
-  repository: https://github.com/openproblems-bio/task_template
+  issue_tracker: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing/issues
+  repository: https://github.com/openproblems-bio/task_spatial_proteomics_preprocessing
   docker_registry: ghcr.io
 
-
-# Step 4: Update the label, summary and description.
-# A unique, human-readable, short label. Used for creating summary tables and visualisations.
-label: Template
-summary: A one sentence summary of purpose and methodology. Used for creating an overview tables.
+label: Spatial Proteomics Preprocessing
+summary: Benchmarking preprocessing workflows that turn multiplexed protein images into cell-by-protein matrices.
 description: |
-  Provide a clear and concise description of your task, detailing the specific problem it aims
-  to solve. Outline the input data types, the expected output, and any assumptions or constraints.
-  Be sure to explain any terminology or concepts that are essential for understanding the task.
+  Imaging-based spatial proteomics platforms - CyCIF, CODEX, MIBI, IMC - produce
+  multiplexed images in which each channel is an antibody-stained protein marker.
+  Turning those images into cell-level protein profiles takes a chain of
+  preprocessing choices: correcting the image, segmenting cells, aggregating
+  pixel intensities per cell, applying quality control, and normalizing. Each
+  choice changes the cell-by-protein matrix that every downstream analysis is
+  built on, there is no established consensus on which to make, and the effect
+  of any single one is rarely reported in isolation.
 
-  Explain the motivation behind your proposed task. Describe the biological or computational 
-  problem you aim to address and why it's important. Discuss the current state of research in
-  this area and any gaps or challenges that your task could help address. This section 
-  should convince readers of the significance and relevance of your task.
+  This task benchmarks those steps as interchangeable modules. The input is a
+  SpatialData Zarr store holding a multichannel image and, optionally, reference
+  segmentation labels. The output is a standardized cell-by-protein AnnData
+  object together with preprocessing quality metrics. Methods within a module
+  share an argument contract, so a run can swap one module while holding the
+  rest fixed.
 
-# A list of references to relevant literature. Each reference should be a DOI or a bibtex entry
+  The metrics are deliberately reference-free wherever possible: they score a
+  result against properties the data must satisfy if preprocessing is correct -
+  every segmented object should contain nuclear signal, nuclear stains repeated
+  across imaging cycles are the same physical nuclei and must agree within a
+  cell, markers confined to incompatible lineages should rarely be co-positive,
+  and expression should not be explained by how large a cell happened to be.
+  This matters because ground-truth segmentation masks are unavailable for most
+  real datasets, including the public exemplar this task is developed against.
+
+  The task stops at preprocessing. Cell-type annotation and biological
+  interpretation are treated as downstream consumers of the output rather than
+  as benchmarked steps.
+
+  The metric implementations live in the `sprotmetrics` package
+  (https://github.com/theislab/sprotmetrics); the components here are the Viash
+  contracts around them.
+
 references:
   doi:
-    - 10.21203/rs.3.rs-4181617/v1
-  # bibtex:
-  #   - |
-  #     @article{doe_2021_template,
-  #       doi = {10.21203/rs.3.rs-4181617/v1},
-  #       url = {https://doi.org/10.21203/rs.3.rs-4181617/v1},
-  #       author = {Doe, John},
-  #       title = {A template for creating new tasks},
-  #       publisher = {Research Square},
-  #       year = {2021},
-  #     }
-  
+    # MCMICRO, the source of the exemplar-001 dataset this task is developed against.
+    - 10.1038/s41592-021-01308-y
+
 info:
-  # Step 5: Replace the thumbnail with an image of your task. Should be an
-  # *.svg file renderable to 450x150 px.
   image: thumbnail.svg
-  # Step 6: Replace the task_template to the name of the task, and the common
-  # dataset to the dataset(s) your task uses.
-  test_resources:
-    - type: s3
-      path: s3://openproblems-data/resources_test/common/cxg_mouse_pancreas_atlas/
-      dest: resources_test/common/cxg_mouse_pancreas_atlas
-    - type: s3
-      path: s3://openproblems-data/resources_test/task_template/
-      dest: resources_test/task_template
+  # No `test_resources` entry yet, deliberately. Nothing has been uploaded to
+  # s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing/,
+  # and naming a bucket path that does not exist makes CI's resource-sync step
+  # fail with AllAccessDisabled, which skips the component tests entirely - so
+  # the task would report red while testing nothing.
+  #
+  # The component tests do not need it: they build their own synthetic fixtures
+  # (src/testing/isp_fixtures.py). Restore the entry when the resources are
+  # uploaded:
+  #
+  #   test_resources:
+  #     - type: s3
+  #       path: s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing/
+  #       dest: resources_test/task_spatial_proteomics_preprocessing
 
-# Step 7: Update the authors of the task.
-authors: 
-  # Full name of the author, usually in the name of FirstName MiddleName LastName.
-  - name: John Doe
-    # Role of the author. Possible values:
-    # 
-    # * `"author"`: Authors who have made substantial contributions to the component.
-    # * `"maintainer"`: The maintainer of the component.
-    # * `"contributor"`: Authors who have made smaller contributions (such as code patches etc.).
+authors:
+  - name: Julius Stein
+    roles: [ "author" ]
+    info:
+      github: juliusstein77
+  - name: Sergio Marco Salas
     roles: [ "author", "maintainer" ]
-    # Additional information on the author
-    info: 
-      github: johndoe
-      orcid: 0000-0000-0000-0000
-      email: john@doe.me
-      twitter: johndoe
-      linkedin: johndoe
-
-# Step 8: Remove all of the comments of the steps you completed
+    info:
+      github: sergiomarco25
 
 config_mods: |
   .runners[.type == "nextflow"].config.labels := { lowmem : "memory = 20.Gb", midmem : "memory = 50.Gb", highmem : "memory = 100.Gb", lowcpu : "cpus = 5", midcpu : "cpus = 15", highcpu : "cpus = 30", lowtime : "time = 1.h", midtime : "time = 4.h", hightime : "time = 8.h", veryhightime : "time = 24.h" }
@@ -86,6 +86,4 @@ repositories:
   - name: openproblems
     type: github
     repo: openproblems-bio/openproblems
-    tag: build/main # Step 9: Set this to the latest release
-
-# Step 10: High five yourself!
+    tag: build/main

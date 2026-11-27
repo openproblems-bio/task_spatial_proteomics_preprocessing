@@ -1,108 +1,318 @@
 name: run_benchmark
 namespace: workflows
 
+info:
+  label: "Spatial proteomics preprocessing benchmark"
+  summary: "End-to-end benchmark workflow for spatial proteomics preprocessing"
+  description: |
+    Reproducible ISP preprocessing workflow:
+    SpatialData zarr -> image correction -> segmentation -> protein aggregation -> QC -> normalization -> metrics.
+    The workflow supports benchmarkable alternatives for image correction, segmentation, aggregation, and quality control.
+
 argument_groups:
   - name: Inputs
     arguments:
-      - name: "--input_train"
-        __merge__: /src/api/file_train.yaml
-        type: file
-        direction: input
-        required: true
-      - name: "--input_test"
-        __merge__: /src/api/file_test.yaml
-        type: file
-        direction: input
-        required: true
-      - name: "--input_solution"
-        __merge__: /src/api/file_solution.yaml
-        type: file
-        direction: input
-        required: true
-  - name: Outputs
-    arguments:
-      - name: "--output_scores"
-        type: file
-        required: true
-        direction: output
-        description: A yaml file containing the scores of each of the methods
-        default: score_uns.yaml
-      - name: "--output_method_configs"
-        type: file
-        required: true
-        direction: output
-        default: method_configs.yaml
-      - name: "--output_metric_configs"
-        type: file
-        required: true
-        direction: output
-        default: metric_configs.yaml
-      - name: "--output_dataset_info"
-        type: file
-        required: true
-        direction: output
-        default: dataset_uns.yaml
-      - name: "--output_task_info"
-        type: file
-        required: true
-        direction: output
-        default: task_info.yaml
-  - name: Method filtering
-    description: |
-      Use these arguments to filter methods by name. By default, all methods are
-      run. If `--methods_include` is defined, only those methods are run. If
-      `--methods_exclude` is defined, all methods except those specified are run.
-      These arguments are mutually exclusive, so only `--methods_include` OR
-      `--methods_exclude` can set but not both.
-    arguments:
-      - name: "--paramsets"
+      - name: "--input_zarr"
         type: file
         direction: input
         required: false
-        description: |
-          A yaml file mapping method ids to named parameter sets, e.g.:
-
-            logistic_regression:
-              strong_regularization:
-                inverse_regularization_strength: 0.1
-              weak_regularization:
-                inverse_regularization_strength: 10.0
-
-          Each listed method is run once per parameter set, with the given arguments
-          and with `paramset_name`/`paramset` attached to its scores.
-          If not provided, the parameter sets default to the `info.variants`
-          defined in the method components' configs. A method without
-          `info.variants` is run once with its default parameter set.
-      - name: "--methods_include"
+        description: "Path to a SpatialData Zarr store. Alias in the raw Nextflow script: --zarr."
+      - name: "--zarr"
+        type: file
+        direction: input
+        required: false
+        description: "Path to a SpatialData Zarr store. Alias for --input_zarr."
+      - name: "--viash_engine"
         type: string
-        multiple: true
-        description: |
-          A list of method ids to include. If specified, only these methods will be run.
-          For parameterised methods, a single paramset can be targeted as `<method_id>.<paramset_name>`, e.g. `logistic_regression.strong_regularization`.
-      - name: "--methods_exclude"
+        direction: input
+        required: false
+        default: "docker"
+        description: "Engine the component executables run under. One of docker or native. Components must have been built with the same engine."
+      - name: "--image_key"
         type: string
-        multiple: true
-        description: |
-          A list of method ids to exclude. If specified, all methods except the ones listed will be run.
-          For parameterised methods, a single paramset can be excluded as `<method_id>.<paramset_name>`, e.g. `logistic_regression.strong_regularization`.
-  - name: Metric filtering
-    description: |
-      Use these arguments to filter metrics by name. By default, all metrics are
-      run. If `--metrics_include` is defined, only those metrics are run. If
-      `--metrics_exclude` is defined, all metrics except those specified are run.
-      These arguments are mutually exclusive, so only `--metrics_include` OR
-      `--metrics_exclude` can set but not both.
+        direction: input
+        required: false
+        default: null
+        description: "SpatialData image key to use. If null, the first image is used."
+
+  - name: Image correction
     arguments:
-      - name: "--metrics_include"
+      - name: "--image_correction_method"
         type: string
-        multiple: true
-        description: |
-          A list of metric ids to include. If specified, only these metrics will be run.
-      - name: "--metrics_exclude"
+        direction: input
+        required: false
+        default: "percentile_background"
+        description: "Image correction method. One of no_correction, percentile_background, or flatfield."
+      - name: "--background_percentile"
+        type: double
+        direction: input
+        required: false
+        default: 1.0
+        description: "Per-channel percentile used as background estimate."
+      - name: "--rescale_max"
+        type: boolean
+        direction: input
+        required: false
+        default: false
+        description: "Whether to rescale every channel to max 1 after correction."
+      - name: "--flatfield_sigma"
+        type: double
+        direction: input
+        required: false
+        default: 50.0
+        description: "Gaussian sigma in pixels for flat-field illumination estimation."
+      - name: "--flatfield_mode"
         type: string
-        multiple: true
-        description: |
-          A list of metric ids to exclude. If specified, all metrics except the ones listed will be run.
+        direction: input
+        required: false
+        default: "subtract"
+        description: "Flat-field correction mode. One of subtract or divide."
+
+  - name: Segmentation
+    arguments:
+      - name: "--segmentation_method"
+        type: string
+        direction: input
+        required: false
+        default: "threshold"
+        description: "Segmentation method. One of threshold, watershed_expand, or reference."
+      - name: "--labels_key"
+        type: string
+        direction: input
+        required: false
+        default: null
+        description: "SpatialData labels key used by reference segmentation. If null, the first labels element is used."
+      - name: "--nuclei_channel"
+        type: integer
+        direction: input
+        required: false
+        default: 0
+        description: "Channel index used for nuclear segmentation."
+      - name: "--threshold_method"
+        type: string
+        direction: input
+        required: false
+        default: "quantile"
+        description: "Thresholding strategy used by watershed segmentation. One of quantile or otsu."
+      - name: "--threshold_quantile"
+        type: double
+        direction: input
+        required: false
+        default: 0.90
+        description: "Quantile threshold for nuclear segmentation."
+      - name: "--smoothing_sigma"
+        type: double
+        direction: input
+        required: false
+        default: 1.0
+        description: "Gaussian smoothing sigma used by watershed segmentation."
+      - name: "--segmentation_min_area"
+        type: integer
+        direction: input
+        required: false
+        default: 30
+        description: "Minimum segmented object area in pixels."
+      - name: "--hole_area"
+        type: integer
+        direction: input
+        required: false
+        default: 64
+        description: "Maximum hole area filled during watershed preprocessing."
+      - name: "--expansion_distance"
+        type: integer
+        direction: input
+        required: false
+        default: 5
+        description: "Pixel distance used to expand watershed nuclear labels."
+
+  - name: Aggregation
+    arguments:
+      - name: "--aggregation_method"
+        type: string
+        direction: input
+        required: false
+        default: "mean"
+        description: "Protein aggregation method. One of mean, sum, or median."
+      - name: "--stat"
+        type: string
+        direction: input
+        required: false
+        default: "mean"
+        description: "Legacy aggregation statistic. Dedicated aggregation methods use --aggregation_method."
+
+  - name: Quality control
+    arguments:
+      - name: "--qc_method"
+        type: string
+        direction: input
+        required: false
+        default: "fixed_threshold"
+        description: "QC method. One of no_qc, fixed_threshold, or adaptive_quantile."
+      - name: "--min_area"
+        type: integer
+        direction: input
+        required: false
+        default: 50
+        description: "Minimum cell area for fixed-threshold QC."
+      - name: "--min_total"
+        type: double
+        direction: input
+        required: false
+        default: 0.0
+        description: "Minimum total protein intensity for fixed-threshold QC."
+      - name: "--area_quantile"
+        type: double
+        direction: input
+        required: false
+        default: 0.05
+        description: "Lower area quantile used by adaptive quantile QC."
+      - name: "--total_quantile"
+        type: double
+        direction: input
+        required: false
+        default: 0.05
+        description: "Lower total-intensity quantile used by adaptive quantile QC."
+
+  - name: Normalization
+    arguments:
+      - name: "--normalization_method"
+        type: string
+        direction: input
+        required: false
+        default: "total_log1p"
+        description: "Normalization method. One of no_normalization, total_log1p, or arcsinh."
+      - name: "--scale"
+        type: double
+        direction: input
+        required: false
+        default: 10000
+        description: "Target total intensity for total-log1p normalization."
+      - name: "--cofactor"
+        type: double
+        direction: input
+        required: false
+        default: 5.0
+        description: "Cofactor used for arcsinh normalization."
+      - name: "--transform"
+        type: string
+        direction: input
+        required: false
+        default: "log1p"
+        description: "Legacy transform argument kept for backward compatibility."
+
+  - name: Metrics
+    arguments:
+      - name: "--cov_thr"
+        type: double
+        direction: input
+        required: false
+        default: 0.1
+        description: "Threshold used for marker coverage computation."
+      - name: "--metric_marker_layer"
+        type: string
+        direction: input
+        required: false
+        default: "counts"
+        description: "Layer evaluated by marker-distribution metrics. If missing, X is used."
+      - name: "--zero_threshold"
+        type: double
+        direction: input
+        required: false
+        default: 0.0
+        description: "Threshold below which marker values are counted as zero or absent."
+      - name: "--metric_low_quantile"
+        type: double
+        direction: input
+        required: false
+        default: 0.01
+        description: "Lower quantile for robust marker dynamic-range metrics."
+      - name: "--metric_high_quantile"
+        type: double
+        direction: input
+        required: false
+        default: 0.99
+        description: "Upper quantile for robust marker dynamic-range metrics."
+      - name: "--metric_raw_layer"
+        type: string
+        direction: input
+        required: false
+        default: "counts"
+        description: "Raw layer used by normalization diagnostics."
+      - name: "--metric_normalized_layer"
+        type: string
+        direction: input
+        required: false
+        default: "normalized"
+        description: "Normalized layer used by normalization diagnostics."
+      - name: "--metric_max_cells"
+        type: integer
+        direction: input
+        required: false
+        default: 5000
+        description: "Maximum number of cells used by rank-preservation diagnostics. Use 0 to disable subsampling."
+      - name: "--nuclear_markers"
+        type: string
+        direction: input
+        required: false
+        default: null
+        description: "Comma-separated nuclear marker names for the segmentation-quality metrics. If null, names matching DNA, DAPI or Hoechst are auto-detected."
+      - name: "--exclusive_pairs"
+        type: string
+        direction: input
+        required: false
+        default: null
+        description: "Comma-separated mutually exclusive marker pairs as A:B. Co-expression metrics stay NaN when unset."
+      - name: "--n_neighbors"
+        type: integer
+        direction: input
+        required: false
+        default: 6
+        description: "Neighbours per cell used by the spillover metric."
+      - name: "--metric_covariate"
+        type: string
+        direction: input
+        required: false
+        default: "area"
+        description: "obs column treated as the technical covariate."
+      - name: "--metric_n_pcs"
+        type: integer
+        direction: input
+        required: false
+        default: 10
+        description: "Principal components correlated against the covariate."
+      - name: "--dilation_iterations"
+        type: integer
+        direction: input
+        required: false
+        default: 3
+        description: "Pixels by which masks are grown to sample proximal background."
+      - name: "--norm_percentile"
+        type: double
+        direction: input
+        required: false
+        default: 95.0
+        description: "Percentile of per-cell intensity used to normalise the signal integral."
+      - name: "--metric_random_state"
+        type: integer
+        direction: input
+        required: false
+        default: 0
+        description: "Random seed used by metric subsampling."
+
+  - name: Outputs
+    arguments:
+      - name: "--outdir"
+        type: file
+        direction: output
+        required: false
+        default: "results_isp"
+        description: "Output directory. Alias for --publish_dir."
+      - name: "--publish_dir"
+        type: file
+        direction: output
+        required: false
+        default: "results_isp"
+        description: "Output directory. Alias for --outdir."
 
 resources:
   - type: nextflow_script
@@ -110,15 +320,31 @@ resources:
     entrypoint: run_wf
   - type: file
     path: /_viash.yaml
-  - path: /common/nextflow_helpers/helper.nf
+  - type: file
+    path: /common/nextflow_helpers/helper.nf
 
 dependencies:
-  - name: utils/extract_uns_metadata
-    repository: openproblems
-  - name: control_methods/true_labels
-  - name: control_methods/random_labels
-  - name: methods/logistic_regression
-  - name: metrics/accuracy
+  - name: methods_image_correction/no_image_correction
+  - name: methods_image_correction/basic_image_correction
+  - name: methods_image_correction/flatfield_image_correction
+  - name: methods_proteomics_segmentation/basic_threshold_segmentation
+  - name: methods_proteomics_segmentation/watershed_expand_segmentation
+  - name: methods_proteomics_segmentation/reference_segmentation
+  - name: methods_protein_aggregation/mean_intensity_aggregation
+  - name: methods_protein_aggregation/sum_intensity_aggregation
+  - name: methods_protein_aggregation/median_intensity_aggregation
+  - name: methods_proteomics_qc/no_qc_filter
+  - name: methods_proteomics_qc/basic_qc_filter
+  - name: methods_proteomics_qc/adaptive_quantile_qc_filter
+  - name: methods_proteomics_normalization/no_normalization
+  - name: methods_proteomics_normalization/total_log1p_normalization
+  - name: methods_proteomics_normalization/arcsinh_normalization
+  - name: metrics_proteomics/basic
+  - name: metrics_proteomics/marker_distribution
+  - name: metrics_proteomics/normalization_diagnostics
+  - name: metrics_proteomics/segmentation_quality
+  - name: metrics_proteomics/technical_covariates
+  - name: metrics_proteomics/signal_background
 
 runners:
   - type: nextflow

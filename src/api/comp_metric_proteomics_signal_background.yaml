@@ -1,0 +1,69 @@
+namespace: metrics_proteomics
+info:
+  type: metric
+  subtype: proteomics_signal_background
+  type_info:
+    label: "Proteomics signal-versus-background metrics"
+    summary: "Score image correction and mask placement against a local background"
+    description: |
+      The only metrics in this benchmark computed from pixels rather than from
+      the aggregated matrix, and therefore the only ones that can see what the
+      cell table cannot: how much of each marker's signal actually falls inside
+      the masks, and how much of it is background that correction failed to
+      remove.
+
+      Background is sampled from a ring immediately outside the masks rather
+      than from all non-cell pixels, so the comparison is local and is not
+      dominated by empty regions of the slide.
+
+      Adapted from the scverse hackathon `sprot` prototype
+      (`metrics/protein_quality_metrics.py`).
+arguments:
+  - name: "--input_image"
+    type: file
+    direction: input
+    required: true
+    description: "Corrected multichannel image as a NumPy array, channels by height by width."
+  - name: "--input_labels"
+    type: file
+    direction: input
+    required: true
+    description: "Segmentation label mask as a two-dimensional NumPy array."
+  - name: "--input_markers"
+    type: file
+    direction: input
+    required: false
+    description: "JSON file with marker names, either a list or under the key markers."
+  - name: "--input_qc"
+    type: file
+    direction: input
+    required: false
+    description: "Optional AnnData carrying obs['passed_QC'], used to report the QC-passing variants. Without it those are NaN."
+  - name: "--dilation_iterations"
+    type: integer
+    direction: input
+    required: false
+    default: 3
+    description: "How far to grow the masks when sampling proximal background, in pixels."
+  - name: "--norm_percentile"
+    type: double
+    direction: input
+    required: false
+    default: 95.0
+    description: "Percentile of per-cell intensity used to normalise the signal integral."
+  - name: "--random_state"
+    type: integer
+    direction: input
+    required: false
+    default: 0
+    description: "Random seed for background sampling, which is otherwise irreproducible."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData with uns['metric_ids'] and uns['metric_values']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_signal_background.py
+  - path: /src/testing/isp_fixtures.py

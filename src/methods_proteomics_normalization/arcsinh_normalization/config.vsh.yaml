@@ -1,0 +1,28 @@
+__merge__: /src/api/comp_method_proteomics_normalization.yaml
+
+name: arcsinh_normalization
+label: "Arcsinh normalization"
+summary: "Apply cytometry-style arcsinh transformation to raw intensities"
+description: |
+  Cytometry-style intensity transformation for spatial proteomics. Raw marker
+  intensities are transformed using arcsinh(x / cofactor). This stabilizes
+  high-intensity values without enforcing equal total intensity per cell.
+
+resources:
+  - type: python_script
+    path: script.py
+
+engines:
+  - type: docker
+    image: openproblems/base_python:1
+    setup:
+      - type: python
+        pypi:
+          - "anndata>=0.10.0"
+          - "numpy"
+          - "scipy"
+          - "zarr<3.0.0"
+  - type: native
+
+runners:
+  - type: executable

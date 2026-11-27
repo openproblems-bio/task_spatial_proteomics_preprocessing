@@ -13,7 +13,7 @@ cd "$REPO_ROOT"
 
 # remove this when you have updated the script for your task
 echo "TODO: update this script to fit your task."
-echo "  Step 1: replace 'task_template' with the name of the task in the commands below."
+echo "  Step 1: replace 'task_spatial_proteomics_preprocessing' with the name of the task in the commands below."
 echo "  Step 2: update the rename keys to match the run_benchmark workflow inputs."
 echo "  Step 3: remove this message."
 exit 1
@@ -36,7 +36,7 @@ publish_dir: "$publish_dir"
 HERE
 
 # run the benchmark
-nextflow run openproblems-bio/task_template \
+nextflow run openproblems-bio/task_spatial_proteomics_preprocessing \
   -r build/main \
   -main-script target/nextflow/workflows/run_benchmark/main.nf \
   -profile docker \

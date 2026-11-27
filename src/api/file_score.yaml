@@ -1,7 +1,7 @@
 type: file
-example: "resources_test/task_template/cxg_mouse_pancreas_atlas/score.h5ad"
-label: Score
-summary: "File indicating the score of a metric."
+example: "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/score.h5ad"
+label: "Score"
+summary: "Metric score file"
 info:
   format:
     type: h5ad
@@ -16,7 +16,7 @@ info:
         required: true
       - type: string
         name: method_id
-        description: "A unique identifier for the method"
+        description: "A unique identifier for the method combination that produced this result"
         required: true
       - type: string
         name: metric_ids

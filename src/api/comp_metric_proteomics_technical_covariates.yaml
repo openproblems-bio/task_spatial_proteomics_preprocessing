@@ -1,0 +1,70 @@
+namespace: metrics_proteomics
+info:
+  type: metric
+  subtype: proteomics_technical_covariates
+  type_info:
+    label: "Proteomics technical covariate metrics"
+    summary: "How much of the signal is still explained by technical factors"
+    description: |
+      Aggregation and normalization are meant to yield per-cell protein
+      profiles that reflect biology rather than how large a cell happened to be
+      or how bright its mask was. These metrics quantify how far that holds:
+
+        - variance in expression attributable to cell area;
+        - correlation between the leading principal components and cell area;
+        - dependence of per-marker variance on per-marker mean, which is what a
+          variance-stabilising transform is supposed to remove;
+        - whether variance is spread across the panel or dominated by a few
+          bright markers.
+
+      Adapted from the scverse hackathon `sprot` prototype
+      (`metrics/technical_correction.py`, `metrics/protein_contribution.py`),
+      with cell area replacing the single-cell covariates it assumed.
+
+      Reported over all cells and over the QC-passing subset.
+arguments:
+  - name: "--input"
+    type: file
+    direction: input
+    required: true
+    description: "Input AnnData with cell-by-protein intensities and obs['area']."
+  - name: "--layer"
+    type: string
+    direction: input
+    required: false
+    default: "normalized"
+    description: "Layer to evaluate. Falls back to counts, then X, when absent."
+  - name: "--covariate"
+    type: string
+    direction: input
+    required: false
+    default: "area"
+    description: "obs column treated as the technical covariate."
+  - name: "--n_pcs"
+    type: integer
+    direction: input
+    required: false
+    default: 10
+    description: "Principal components correlated against the covariate. Clamped to the data's rank."
+  - name: "--max_cells"
+    type: integer
+    direction: input
+    required: false
+    default: 20000
+    description: "Subsample cells above this count. Use 0 to disable."
+  - name: "--random_state"
+    type: integer
+    direction: input
+    required: false
+    default: 0
+    description: "Random seed used for subsampling."
+  - name: "--output"
+    type: file
+    direction: output
+    required: true
+    description: "Output AnnData with uns['metric_ids'] and uns['metric_values']."
+
+test_resources:
+  - type: python_script
+    path: /src/testing/test_metrics.py
+  - path: /src/testing/isp_fixtures.py
