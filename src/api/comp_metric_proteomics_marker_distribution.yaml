@@ -46,6 +46,7 @@ arguments:
     default: 0.99
     description: "Upper quantile for robust dynamic-range estimation."
   - name: "--output"
+    __merge__: /src/api/file_score.yaml
     type: file
     direction: output
     required: true

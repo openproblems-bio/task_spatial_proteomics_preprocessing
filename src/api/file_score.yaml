@@ -1,30 +1,41 @@
 type: file
 example: "resources_test/task_spatial_proteomics_preprocessing/exemplar_001/score.h5ad"
 label: "Score"
-summary: "Metric score file"
+summary: "The metric values one metric component computed for one preprocessing chain."
+description: |
+  An AnnData carrying only `uns`: there is no matrix, because a metric component
+  reduces a cell-by-protein matrix to a handful of numbers.
+
+  Provenance is deliberately absent. In a task where one method produces the
+  result, the metric can copy that method's id off its input; here the result is
+  produced by a chain of five methods, and the file a metric reads carries no
+  record of the four steps before the last. The run ids, the component that ran
+  at each step, and the dataset are therefore attached by the benchmark
+  workflow, which is the only place that knows them, and end up in
+  `output_scores` (`score_uns.yaml`) rather than here.
+
+  Every metric is reported twice: over all segmented cells, and over the
+  QC-passing subset under the same id suffixed `_qc_pass`. QC components
+  annotate rather than filter and all normalization is per-cell, so without the
+  second pass the choice of QC method would leave every other metric untouched.
 info:
   format:
     type: h5ad
     uns:
       - type: string
-        name: dataset_id
-        description: "A unique identifier for the dataset"
-        required: true
-      - type: string
-        name: normalization_id
-        description: "Which normalization was used"
-        required: true
-      - type: string
-        name: method_id
-        description: "A unique identifier for the method combination that produced this result"
-        required: true
-      - type: string
         name: metric_ids
-        description: "One or more unique metric identifiers"
+        description: "One or more unique metric identifiers."
         multiple: true
         required: true
       - type: double
         name: metric_values
-        description: "The metric values obtained for the given prediction. Must be of same length as 'metric_ids'."
+        description: |
+          The metric values obtained for the given prediction. Must be of the
+          same length as `metric_ids`. A metric whose configuration is absent
+          for the panel reports NaN rather than a guess.
         multiple: true
         required: true
+      - type: string
+        name: metric_group
+        description: "The metric family that produced these values."
+        required: false

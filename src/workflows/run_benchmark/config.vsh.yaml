@@ -5,314 +5,172 @@ info:
   label: "Spatial proteomics preprocessing benchmark"
   summary: "End-to-end benchmark workflow for spatial proteomics preprocessing"
   description: |
-    Reproducible ISP preprocessing workflow:
-    SpatialData zarr -> image correction -> segmentation -> protein aggregation -> QC -> normalization -> metrics.
-    The workflow supports benchmarkable alternatives for image correction, segmentation, aggregation, and quality control.
+    Runs the preprocessing chain
+
+      SpatialData zarr -> image correction -> segmentation -> protein
+      aggregation -> QC -> normalization -> metrics
+
+    once per method combination, and collects every metric value into a single
+    score file alongside the method and metric configs needed to interpret it.
+
+    Which combinations are run is controlled by the method-selection arguments
+    rather than by editing the workflow. `--default_methods` names one method
+    per step; a method that is not a default is run only in combination with the
+    defaults, so the run varies one step at a time instead of taking the full
+    cross-product. With the shipped defaults that is 10 chains rather than the
+    162 a cross-product would give, and each non-baseline chain differs from the
+    baseline in exactly one step, which is what makes a difference in a metric
+    attributable.
+
+    Per-method parameters are not workflow arguments. They come from the
+    component defaults, or from `--method_parameters_yaml`, which can also sweep
+    one parameter across values.
 
 argument_groups:
   - name: Inputs
     arguments:
       - name: "--input_zarr"
+        __merge__: /src/api/file_spatial_proteomics_dataset.yaml
         type: file
         direction: input
-        required: false
-        description: "Path to a SpatialData Zarr store. Alias in the raw Nextflow script: --zarr."
-      - name: "--zarr"
-        type: file
-        direction: input
-        required: false
-        description: "Path to a SpatialData Zarr store. Alias for --input_zarr."
-      - name: "--viash_engine"
-        type: string
-        direction: input
-        required: false
-        default: "docker"
-        description: "Engine the component executables run under. One of docker or native. Components must have been built with the same engine."
+        required: true
       - name: "--image_key"
         type: string
         direction: input
         required: false
-        default: null
-        description: "SpatialData image key to use. If null, the first image is used."
-
-  - name: Image correction
-    arguments:
-      - name: "--image_correction_method"
-        type: string
-        direction: input
-        required: false
-        default: "percentile_background"
-        description: "Image correction method. One of no_correction, percentile_background, or flatfield."
-      - name: "--background_percentile"
-        type: double
-        direction: input
-        required: false
-        default: 1.0
-        description: "Per-channel percentile used as background estimate."
-      - name: "--rescale_max"
-        type: boolean
-        direction: input
-        required: false
-        default: false
-        description: "Whether to rescale every channel to max 1 after correction."
-      - name: "--flatfield_sigma"
-        type: double
-        direction: input
-        required: false
-        default: 50.0
-        description: "Gaussian sigma in pixels for flat-field illumination estimation."
-      - name: "--flatfield_mode"
-        type: string
-        direction: input
-        required: false
-        default: "subtract"
-        description: "Flat-field correction mode. One of subtract or divide."
-
-  - name: Segmentation
-    arguments:
-      - name: "--segmentation_method"
-        type: string
-        direction: input
-        required: false
-        default: "threshold"
-        description: "Segmentation method. One of threshold, watershed_expand, or reference."
+        description: |
+          SpatialData image element to read. If unset, the first image is used.
       - name: "--labels_key"
         type: string
         direction: input
         required: false
-        default: null
-        description: "SpatialData labels key used by reference segmentation. If null, the first labels element is used."
-      - name: "--nuclei_channel"
-        type: integer
-        direction: input
-        required: false
-        default: 0
-        description: "Channel index used for nuclear segmentation."
-      - name: "--threshold_method"
-        type: string
-        direction: input
-        required: false
-        default: "quantile"
-        description: "Thresholding strategy used by watershed segmentation. One of quantile or otsu."
-      - name: "--threshold_quantile"
-        type: double
-        direction: input
-        required: false
-        default: 0.90
-        description: "Quantile threshold for nuclear segmentation."
-      - name: "--smoothing_sigma"
-        type: double
-        direction: input
-        required: false
-        default: 1.0
-        description: "Gaussian smoothing sigma used by watershed segmentation."
-      - name: "--segmentation_min_area"
-        type: integer
-        direction: input
-        required: false
-        default: 30
-        description: "Minimum segmented object area in pixels."
-      - name: "--hole_area"
-        type: integer
-        direction: input
-        required: false
-        default: 64
-        description: "Maximum hole area filled during watershed preprocessing."
-      - name: "--expansion_distance"
-        type: integer
-        direction: input
-        required: false
-        default: 5
-        description: "Pixel distance used to expand watershed nuclear labels."
+        description: |
+          SpatialData labels element read by `reference_segmentation`. If unset,
+          the first labels element is used.
 
-  - name: Aggregation
+  - name: Outputs
     arguments:
-      - name: "--aggregation_method"
-        type: string
-        direction: input
-        required: false
-        default: "mean"
-        description: "Protein aggregation method. One of mean, sum, or median."
-      - name: "--stat"
-        type: string
-        direction: input
-        required: false
-        default: "mean"
-        description: "Legacy aggregation statistic. Dedicated aggregation methods use --aggregation_method."
+      - name: "--output_scores"
+        type: file
+        direction: output
+        required: true
+        default: score_uns.yaml
+        description: |
+          One record per (method chain, metric component) run, carrying the
+          metric ids and values together with the chain that produced them.
+      - name: "--output_method_configs"
+        type: file
+        direction: output
+        required: true
+        default: method_configs.yaml
+      - name: "--output_metric_configs"
+        type: file
+        direction: output
+        required: true
+        default: metric_configs.yaml
+      - name: "--output_dataset_info"
+        type: file
+        direction: output
+        required: true
+        default: dataset_uns.yaml
+      - name: "--output_task_info"
+        type: file
+        direction: output
+        required: true
+        default: task_info.yaml
 
-  - name: Quality control
-    arguments:
-      - name: "--qc_method"
-        type: string
-        direction: input
-        required: false
-        default: "fixed_threshold"
-        description: "QC method. One of no_qc, fixed_threshold, or adaptive_quantile."
-      - name: "--min_area"
-        type: integer
-        direction: input
-        required: false
-        default: 50
-        description: "Minimum cell area for fixed-threshold QC."
-      - name: "--min_total"
-        type: double
-        direction: input
-        required: false
-        default: 0.0
-        description: "Minimum total protein intensity for fixed-threshold QC."
-      - name: "--area_quantile"
-        type: double
-        direction: input
-        required: false
-        default: 0.05
-        description: "Lower area quantile used by adaptive quantile QC."
-      - name: "--total_quantile"
-        type: double
-        direction: input
-        required: false
-        default: 0.05
-        description: "Lower total-intensity quantile used by adaptive quantile QC."
+  - name: Method selection
+    description: |
+      Which methods run at each step. A method that is not listed in
+      `--default_methods` is run only in combination with the defaults, so each
+      non-baseline chain differs from the baseline in exactly one step.
 
-  - name: Normalization
+      These take several values, separated by `;` on the command line.
     arguments:
-      - name: "--normalization_method"
+      - name: "--default_methods"
         type: string
-        direction: input
-        required: false
-        default: "total_log1p"
-        description: "Normalization method. One of no_normalization, total_log1p, arcsinh, or clr."
-      - name: "--scale"
-        type: double
-        direction: input
-        required: false
-        default: 10000
-        description: "Target total intensity for total-log1p normalization."
-      - name: "--cofactor"
-        type: double
-        direction: input
-        required: false
-        default: 5.0
-        description: "Cofactor used for arcsinh normalization."
-      - name: "--transform"
+        multiple: true
+        description: |
+          One method per step, forming the baseline chain. Every other method is
+          run against this baseline.
+        default: [basic_image_correction, basic_threshold_segmentation, mean_intensity_aggregation, basic_qc_filter, total_log1p_normalization]
+      - name: "--image_correction_methods"
         type: string
-        direction: input
-        required: false
-        default: "log1p"
-        description: "Legacy transform argument kept for backward compatibility."
+        multiple: true
+        default: [no_image_correction, basic_image_correction, flatfield_image_correction]
+      - name: "--segmentation_methods"
+        type: string
+        multiple: true
+        description: |
+          `reference_segmentation` is not a default because it needs a `Labels`
+          element, which the exemplar this task is developed against does not
+          have. Add it when running on a dataset that ships reference masks.
+        default: [basic_threshold_segmentation, watershed_expand_segmentation]
+      - name: "--aggregation_methods"
+        type: string
+        multiple: true
+        default: [mean_intensity_aggregation, sum_intensity_aggregation, median_intensity_aggregation]
+      - name: "--qc_methods"
+        type: string
+        multiple: true
+        default: [no_qc_filter, basic_qc_filter, adaptive_quantile_qc_filter]
+      - name: "--normalization_methods"
+        type: string
+        multiple: true
+        default: [no_normalization, total_log1p_normalization, arcsinh_normalization, clr_normalization]
 
-  - name: Metrics
+  - name: Method parameters
     arguments:
-      - name: "--cov_thr"
-        type: double
+      - name: "--method_parameters_yaml"
+        type: file
         direction: input
         required: false
-        default: 0.1
-        description: "Threshold used for marker coverage computation."
-      - name: "--metric_marker_layer"
-        type: string
-        direction: input
-        required: false
-        default: "counts"
-        description: "Layer evaluated by marker-distribution metrics. If missing, X is used."
-      - name: "--zero_threshold"
-        type: double
-        direction: input
-        required: false
-        default: 0.0
-        description: "Threshold below which marker values are counted as zero or absent."
-      - name: "--metric_low_quantile"
-        type: double
-        direction: input
-        required: false
-        default: 0.01
-        description: "Lower quantile for robust marker dynamic-range metrics."
-      - name: "--metric_high_quantile"
-        type: double
-        direction: input
-        required: false
-        default: 0.99
-        description: "Upper quantile for robust marker dynamic-range metrics."
-      - name: "--metric_raw_layer"
-        type: string
-        direction: input
-        required: false
-        default: "counts"
-        description: "Raw layer used by normalization diagnostics."
-      - name: "--metric_normalized_layer"
-        type: string
-        direction: input
-        required: false
-        default: "normalized"
-        description: "Normalized layer used by normalization diagnostics."
-      - name: "--metric_max_cells"
-        type: integer
-        direction: input
-        required: false
-        default: 5000
-        description: "Maximum number of cells used by rank-preservation diagnostics. Use 0 to disable subsampling."
+        description: |
+          Optional YAML defining per-method parameter sets and sweeps. Either a
+          top-level `parameters:` mapping or the mapping itself:
+
+            parameters:
+              basic_threshold_segmentation:
+                default:
+                  threshold_method: otsu
+                sweep:
+                  threshold_quantile: [0.85, 0.90, 0.95]
+
+          The `default` block changes that method's arguments wherever it runs.
+          Each `sweep` value becomes its own chain, tagged with a variant name,
+          and sweeps are expanded only against the baseline for the same reason
+          non-default methods are.
+
+  - name: Metric parameters
+    description: |
+      Metric arguments that have no safe default because they depend on the
+      antibody panel. Everything else uses the metric components' own defaults.
+    arguments:
       - name: "--nuclear_markers"
         type: string
         direction: input
         required: false
-        default: null
-        description: "Comma-separated nuclear marker names for the segmentation-quality metrics. If null, names matching DNA, DAPI or Hoechst are auto-detected."
+        description: |
+          Comma-separated nuclear/DNA marker names. If unset, names matching
+          DNA, DAPI or Hoechst are auto-detected.
       - name: "--exclusive_pairs"
         type: string
         direction: input
         required: false
-        default: null
-        description: "Comma-separated mutually exclusive marker pairs as A:B. Co-expression metrics stay NaN when unset."
-      - name: "--n_neighbors"
-        type: integer
-        direction: input
-        required: false
-        default: 6
-        description: "Neighbours per cell used by the spillover metric."
-      - name: "--metric_covariate"
-        type: string
-        direction: input
-        required: false
-        default: "area"
-        description: "obs column treated as the technical covariate."
-      - name: "--metric_n_pcs"
-        type: integer
-        direction: input
-        required: false
-        default: 10
-        description: "Principal components correlated against the covariate."
+        description: |
+          Comma-separated mutually exclusive marker pairs as `A:B`, for example
+          `ECAD:CD45`. The co-expression metrics stay NaN when unset rather than
+          guessing for an unknown panel.
       - name: "--dilation_iterations"
         type: integer
         direction: input
         required: false
         default: 3
-        description: "Pixels by which masks are grown to sample proximal background."
-      - name: "--norm_percentile"
-        type: double
-        direction: input
-        required: false
-        default: 95.0
-        description: "Percentile of per-cell intensity used to normalise the signal integral."
-      - name: "--metric_random_state"
-        type: integer
-        direction: input
-        required: false
-        default: 0
-        description: "Random seed used by metric subsampling."
-
-  - name: Outputs
-    arguments:
-      - name: "--outdir"
-        type: file
-        direction: output
-        required: false
-        default: "results_isp"
-        description: "Output directory. Alias for --publish_dir."
-      - name: "--publish_dir"
-        type: file
-        direction: output
-        required: false
-        default: "results_isp"
-        description: "Output directory. Alias for --outdir."
+        description: |
+          How far to grow the masks when sampling proximal background, in
+          pixels. Sets how far outside a mask `signal_background` looks, so it
+          is the one metric parameter worth varying with the segmentation
+          method.
 
 resources:
   - type: nextflow_script
@@ -320,10 +178,11 @@ resources:
     entrypoint: run_wf
   - type: file
     path: /_viash.yaml
-  - type: file
-    path: /common/nextflow_helpers/helper.nf
+  - path: /common/nextflow_helpers/helper.nf
 
 dependencies:
+  - name: utils/extract_uns_metadata
+    repository: openproblems
   - name: methods_image_correction/no_image_correction
   - name: methods_image_correction/basic_image_correction
   - name: methods_image_correction/flatfield_image_correction

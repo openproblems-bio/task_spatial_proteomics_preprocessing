@@ -31,6 +31,7 @@ engines:
 - type: native
 runners:
 - type: executable
+- type: nextflow
 info:
   metrics:
   - name: dapi_positive_ratio

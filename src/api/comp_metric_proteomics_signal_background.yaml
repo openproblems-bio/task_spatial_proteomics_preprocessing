@@ -58,6 +58,7 @@ arguments:
     default: 0
     description: "Random seed for background sampling, which is otherwise irreproducible."
   - name: "--output"
+    __merge__: /src/api/file_score.yaml
     type: file
     direction: output
     required: true
