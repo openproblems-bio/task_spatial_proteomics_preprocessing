@@ -83,7 +83,7 @@ engines:
       # Pre-download the fluorescence models so runtime tasks (and CI without
       # network access) do not fetch weights from GitHub.
       - type: python
-        script: from stardist.models import StarDist2D; [StarDist2D.from_pretrained(m) for m in ['2D_versatile_fluo', '2D_paper_dsb2018']]
+        script: from stardist.models import StarDist2D; [StarDist2D.from_pretrained(m) for m in ["2D_versatile_fluo", "2D_paper_dsb2018"]]
   - type: native
 
 runners:
