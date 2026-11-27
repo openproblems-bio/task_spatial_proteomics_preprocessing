@@ -54,10 +54,20 @@ references:
 
 info:
   image: thumbnail.svg
-  test_resources:
-    - type: s3
-      path: s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing/
-      dest: resources_test/task_spatial_proteomics_preprocessing
+  # No `test_resources` entry yet, deliberately. Nothing has been uploaded to
+  # s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing/,
+  # and naming a bucket path that does not exist makes CI's resource-sync step
+  # fail with AllAccessDisabled, which skips the component tests entirely - so
+  # the task would report red while testing nothing.
+  #
+  # The component tests do not need it: they build their own synthetic fixtures
+  # (src/testing/isp_fixtures.py). Restore the entry when the resources are
+  # uploaded:
+  #
+  #   test_resources:
+  #     - type: s3
+  #       path: s3://openproblems-data/resources_test/task_spatial_proteomics_preprocessing/
+  #       dest: resources_test/task_spatial_proteomics_preprocessing
 
 authors:
   - name: Julius Stein

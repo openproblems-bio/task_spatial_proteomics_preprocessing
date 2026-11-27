@@ -38,8 +38,10 @@ carried across.
   source repository - one process per stage with a `case` block - rather than
   the `runEach` / `fromState` idiom the template uses. Porting it is what will
   supply the `method_id` and `dataset_id` that `file_score.yaml` now requires.
-* Test resources are not yet on S3; `_viash.yaml` points at the intended
-  location. `scripts/create_resources/isp/` builds the input locally from the
+* Test resources are not yet on S3. `_viash.yaml` carries no `test_resources`
+  entry, because naming a bucket path that does not exist makes CI's
+  resource-sync step fail and skip every component test - red while testing
+  nothing. The intended entry is recorded there as a comment. `scripts/create_resources/isp/` builds the input locally from the
   public MCMICRO download in the meantime.
 * There is no `workflows/process_datasets`. The template's version implements a
   train/test/solution split for label projection, which is not the shape of this
